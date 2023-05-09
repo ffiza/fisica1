@@ -573,6 +573,7 @@ def create_scene(forces: bool = False, dynamics: bool = False):
     vp.scene.width = SCENE_WIDTH
     vp.scene.height = SCENE_HEIGHT
     vp.scene.background = colors.background
+    # TODO: Copy the caption style of pendulum.py
     vp.scene.caption = """
     Para rotar la cámara, arrastra con el botón derecho del mouse o arrastra
     mientras mantienes presionada la tecla Ctrl. Para hacer zoom, usa la rueda
