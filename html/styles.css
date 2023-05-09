@@ -26,7 +26,7 @@
     box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
     border-radius: 6px;
     padding: 1em;
-    margin: 3em 5em 3em 5em;
+    margin: 3em 5% 3em 5%;
     flex: 0 0 17.3vw;
     display: block;
     background: #fff;
@@ -49,4 +49,11 @@
 
 .exercise-list li:before {
     content: "(" counter(list-item, lower-alpha) ") ";
+}
+
+.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: auto;
 }
