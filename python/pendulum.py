@@ -11,8 +11,7 @@ MASS: float = 1.0  # kg
 LENGTH: float = 1.5  # m
 GRAVITY: float = 9.8  # m/s^2
 THETA0: float = np.radians(0.0)  # radians
-# OMEGA0: float = 0.0  # 1/s
-OMEGA0: float = np.sqrt(2 * GRAVITY / LENGTH)  # 1/s
+OMEGA0: float = 0.0  # 1/s
 
 # Scene properties
 DEVICE_HEIGHT: float = 1.0  # m
