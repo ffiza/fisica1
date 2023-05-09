@@ -1,0 +1,19 @@
+.title-block {
+    line-height: 1;
+    margin: 0 0 0.5rem;
+}
+
+.date-text {
+    font-family: MD Primer Bold,Rubik,Lato,Lucida Grande,Lucida Sans Unicode,Tahoma,Sans-Serif;
+    font-style: normal;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #ff7a18;
+    font-size: .66rem;
+    -webkit-margin-end: 0.66rem;
+    margin-inline-end: 0.66rem;
+}
+
+.title-text {
+    
+}
