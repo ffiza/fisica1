@@ -10,7 +10,7 @@ from colors import Colors
 MASS: float = 1.0  # kg
 LENGTH: float = 1.5  # m
 GRAVITY: float = 9.8  # m/s^2
-THETA0: float = np.radians(0.0)  # radians
+THETA0: float = np.radians(45.0)  # radians
 OMEGA0: float = 0.0  # 1/s
 
 # Scene properties
@@ -34,13 +34,19 @@ STEP: float = 0.2
 
 
 class Vector(vp.vector):
-    # TODO: Add documentation.
+    """
+    A class to manage vectors in the coordinate system of the current
+    device.
+    """
     def __init__(self, x: float, y: float, z: float):
         super().__init__(x, y, z)
-        self.transform()
+        self._transform()
 
-    def transform(self):
-        # TODO: Add documentation.
+    def _transform(self) -> None:
+        """
+        This method transforms the coordinates from the local system to the
+        global system of VPython.
+        """
         x = self.x
         y = self.y
         z = self.z
@@ -51,13 +57,19 @@ class Vector(vp.vector):
 
 
 class Displacement(vp.vector):
-    # TODO: Add documentation.
+    """
+    A class to manage displacement vectors in the coordinate system of the
+    current device.
+    """
     def __init__(self, x: float, y: float, z: float):
         super().__init__(x, y, z)
-        self.transform()
+        self._transform()
 
-    def transform(self):
-        # TODO: Add documentation.
+    def _transform(self) -> None:
+        """
+        This method transforms the coordinates from the local system to the
+        global system of VPython.
+        """
         x = self.x
         y = self.y
         z = self.z
@@ -68,18 +80,44 @@ class Displacement(vp.vector):
 
 
 class Solver:
-    # TODO: Add documentation.
-    def __init__(self):
-        pass
+    """
+    A class to manage the solver of the differential equations that define
+    this problem.
+    """
+    def _equations(self, initial_conds: list, times: np.ndarray) -> None:
+        """
+        This method defines the differential equations.
 
-    def _equations(self, initial_conds: list, times: np.ndarray):
-        # TODO: Add documentation.
+        Parameters
+        ----------
+        initial_conds : list
+            A list where the first element is the initial angle in radians
+            and the second element is the initial angular velocity in radians
+            per second.
+        times : np.ndarray
+            An array with the times (in seconds) to analyze.
+        """
         theta, omega = initial_conds
         f = [omega, - GRAVITY / LENGTH * np.sin(theta)]
         return f
 
     def solve(self, tf: float, dt: float, theta0: float, omega0: float):
-        # TODO: Add documentation.
+        """
+        This method solves the differential equations given the inputs, and
+        creates and saves a data frame with all the relevant physical
+        properties.
+
+        Parameters
+        ----------
+        tf : float
+            The last time in seconds.
+        dt : float
+            The time step in seconds.
+        theta0 : float
+            The initial angle in radians.
+        omega0 : float
+            The initial angular velocity in radians per second.
+        """
         initial_conds = [theta0, omega0]
         times = np.arange(0, tf, dt)
 
@@ -111,8 +149,22 @@ class Solver:
 
 
 class Pendulum:
-    # TODO: Add documentation.
+    """
+    A class to manage the 3D model of the pendulum.
+    """
     def __init__(self, x0: float, y0: float, z0: float):
+        """
+        The constructor method.
+
+        Parameters
+        ----------
+        x0 : float
+            The initial position in the x-axis in meters.
+        y0 : float
+            The initial position in the y-axis in meters.
+        z0 : float
+            The initial position in the z-axis in meters.
+        """
         colors = Colors()
 
         self.radius = 0.1
@@ -136,13 +188,27 @@ class Pendulum:
                              radius=0.01)
 
     def update_pos(self, x: float, y: float, z: float) -> None:
-        # TODO: Add documentation.
+        """
+        This method updates the position of the mass of the pendulum to the
+        given values.
+
+        Parameters
+        ----------
+        x : float
+            The position in the x-axis in meters.
+        y : float
+            The position in the y-axis in meters.
+        z : float
+            The position in the z-axis in meters.
+        """
         self.ball.pos = Vector(x, y, z)
         self.rope.modify(1, Vector(x, y, z))
 
 
 class Grid:
-    # TODO: Add documentation.
+    """
+    A class to manage the construction of a grid in the model.
+    """
     def __init__(self):
         colors = Colors()
 
@@ -158,8 +224,14 @@ class Grid:
 
 
 class CartesianFrame:
-    # TODO: Add documentation.
+    """
+    A class to manage the constructor of the 3D model for the cartesian frame
+    of reference.
+    """
     def __init__(self):
+        """
+        The constructor method.
+        """
         colors = Colors()
 
         self.x_axis = vp.arrow(
@@ -186,10 +258,30 @@ class CartesianFrame:
 
 
 class Forces:
-    # TODO: Add documentation.
+    """
+    A class to manage the construction of the 3D models of the forces.
+    """
     def __init__(self, scale: float,
                  x0: float, y0: float, z0: float,
-                 tension: float, weight: float):
+                 tension0: float, weight0: float):
+        """
+        The constructor method
+
+        Parameters
+        ----------
+        scale : float
+            A multiplicative scale factor to apply to the forces.
+        x0 : float
+            The initial position in the x-axis in meters.
+        y0 : float
+            The initial position in the y-axis in meters.
+        z0 : float
+            The initial position in the z-axis in meters.
+        tension0 : float
+            The initial value of the tension in newtons.
+        weight0 : float
+            The initial value of the weight in newtons.
+        """
         colors = Colors()
 
         self.scale = scale
@@ -197,7 +289,7 @@ class Forces:
         # Set up the tension
         self.tension = vp.arrow(
             pos=Vector(x0, y0, z0),
-            axis=-self.scale * tension * Displacement(x0, y0, z0).norm(),
+            axis=-self.scale * tension0 * Displacement(x0, y0, z0).norm(),
             color=colors.yellow,
             round=True, shaftwidth=0.02, headwidth=0.04,
             headlength=0.05)
@@ -209,7 +301,7 @@ class Forces:
         # Set up the weight
         self.weight = vp.arrow(
             pos=Vector(x0, y0, z0),
-            axis=self.scale * weight * Displacement(1, 0, 0).norm(),
+            axis=self.scale * weight0 * Displacement(1, 0, 0).norm(),
             color=colors.yellow,
             round=True, shaftwidth=0.02, headwidth=0.04,
             headlength=0.05)
@@ -220,7 +312,22 @@ class Forces:
 
     def update_pos(self, x: float, y: float, z: float,
                    tension: float, weight: float):
-        # TODO: Add documentation.
+        """
+        This method update the 3D model of the forces to the given values.
+
+        Parameters
+        ----------
+        x : float
+            The position in the x-axis in meters.
+        y : float
+            The position in the y-axis in meters.
+        z : float
+            The position in the z-axis in meters.
+        tension : float
+            The value of the tension in newtons.
+        weight : float
+            The value of the tension in newtons.
+        """
         # Update the tension
         self.tension.pos = Vector(x, y, z)
         self.tension.axis = -self.scale * tension \
@@ -233,11 +340,36 @@ class Forces:
 
 
 class Dynamics:
-    # TODO: Add documentation.
+    """
+    A class to manage the 3D models of the velocity and acceleration.
+    """
     def __init__(self, scale: float,
                  x0: float, y0: float, z0: float,
-                 radial_acc: float, tangential_acc: float,
-                 tangential_vel: float):
+                 radial_acc0: float, tangential_acc0: float,
+                 tangential_vel0: float):
+        """
+        The constructor method.
+
+        Parameters
+        ----------
+        scale : float
+            A multiplicative scale factor to apply to the forces.
+        x0 : float
+            The initial position in the x-axis in meters.
+        y0 : float
+            The initial position in the y-axis in meters.
+        z0 : float
+            The initial position in the z-axis in meters.
+        radial_acc0 : float
+            The initial value of the radial acceleration in meters per
+            second squared.
+        tangential_acc0 : float
+            The initial value of the tangential acceleration in meters
+            per second squared.
+        tangential_vel0 : float
+            The initial value of the tangential velocity in meters
+            per second.
+        """
         colors = Colors()
 
         self.scale = scale
@@ -245,7 +377,7 @@ class Dynamics:
         # Set up the radial acceleration vector and label
         self.radial_acc = vp.arrow(
             pos=Vector(x0, y0, z0),
-            axis=self.scale * radial_acc * Displacement(x0, y0, z0).norm(),
+            axis=self.scale * radial_acc0 * Displacement(x0, y0, z0).norm(),
             color=colors.red,
             round=True, shaftwidth=0.02, headwidth=0.04,
             headlength=0.05)
@@ -258,7 +390,7 @@ class Dynamics:
         self.tangential_acc = vp.arrow(
             pos=Vector(x0, y0, z0),
             axis=self.scale
-            * tangential_acc
+            * tangential_acc0
             * Displacement(x0, y0, z0).norm().rotate(vp.radians(90),
                                                      Displacement(0, 0, 1)),
             color=colors.red,
@@ -273,7 +405,7 @@ class Dynamics:
         self.tangential_vel = vp.arrow(
             pos=Vector(x0, y0, z0),
             axis=self.scale
-            * tangential_vel
+            * tangential_vel0
             * Displacement(x0, y0, z0).norm().rotate(vp.radians(90),
                                                      Displacement(0, 0, 1)),
             color=colors.red,
@@ -287,7 +419,27 @@ class Dynamics:
     def update_pos(self, x: float, y: float, z: float,
                    radial_acc: float, tangential_acc: float,
                    tangential_vel: float):
-        # TODO: Add documentation.
+        """
+        This method updates the 3D model of the forces.
+
+        Parameters
+        ----------
+        x : float
+            The position in the x-axis in meters.
+        y : float
+            The position in the y-axis in meters.
+        z : float
+            The position in the z-axis in meters.
+        radial_acc : float
+            The value of the radial acceleration in meters per
+            second squared.
+        tangential_acc : float
+            The value of the tangential acceleration in meters
+            per second squared.
+        tangential_vel : float
+            The value of the tangential velocity in meters
+            per second.
+        """
         # Update the radial acceleration
         self.radial_acc.pos = Vector(x, y, z)
         self.radial_acc.axis = self.scale * radial_acc \
@@ -312,8 +464,25 @@ class Dynamics:
 
 
 class CylindricalFrame:
-    # TODO: Add documentation.
+    """
+    A class to manage the constructor of the 3D model for the cylindrical frame
+    of reference.
+    """
     def __init__(self, scale: float, x0: float, y0: float, z0: float):
+        """
+        The constructor method.
+
+        Parameters
+        ----------
+        scale : float
+            A multiplicative scale factor to apply to the versors.
+        x0 : float
+            The initial position in the x-axis in meters.
+        y0 : float
+            The initial position in the y-axis in meters.
+        z0 : float
+            The initial position in the z-axis in meters.
+        """
         colors = Colors()
 
         self.scale = scale
@@ -351,7 +520,18 @@ class CylindricalFrame:
             box=False, color=colors.purple)
 
     def update_pos(self, x: float, y: float, z: float):
-        # TODO: Add documentation.
+        """
+        This method updates the 3D model of the frame.
+
+        Parameters
+        ----------
+        x : float
+            The position in the x-axis in meters.
+        y : float
+            The position in the y-axis in meters.
+        z : float
+            The position in the z-axis in meters.
+        """
         self.r_axis.axis = self.scale * Displacement(x, y, z).norm()
         self.r_label.pos = self.r_axis.pos + self.r_axis.axis
 
@@ -361,7 +541,17 @@ class CylindricalFrame:
 
 
 def create_scene(forces: bool = False, dynamics: bool = False):
-    # TODO: Add documentation.
+    """
+    This method creates the 3D scene.
+
+    Parameters
+    ----------
+    forces : bool, optional
+        If True, show the forces in the 3D model, by default False.
+    dynamics : bool, optional
+        If True, show the velocity and acceleration vectors in the 3D model,
+        by default False.
+    """
     colors = Colors()
 
     vp.scene.width = SCENE_WIDTH
@@ -396,17 +586,19 @@ def create_scene(forces: bool = False, dynamics: bool = False):
 
     # Forces
     if forces:
-        forces = Forces(FORCES_SCALE,
-                        x0, y0, z0,
-                        tension=df.loc[0, "Tension"],
-                        weight=df.loc[0, "Weight"])
+        forces = Forces(
+            FORCES_SCALE,
+            x0, y0, z0,
+            tension0=df.loc[0, "Tension"],
+            weight0=df.loc[0, "Weight"])
 
     if dynamics:
-        dynamics = Dynamics(DYNAMICS_SCALE,
-                            x0, y0, z0,
-                            radial_acc=df.loc[0, "RadialAcceleration"],
-                            tangential_acc=df.loc[0, "TangentialAcceleration"],
-                            tangential_vel=df.loc[0, "TangentialVelocity"])
+        dynamics = Dynamics(
+            DYNAMICS_SCALE,
+            x0, y0, z0,
+            radial_acc0=df.loc[0, "RadialAcceleration"],
+            tangential_acc0=df.loc[0, "TangentialAcceleration"],
+            tangential_vel0=df.loc[0, "TangentialVelocity"])
 
     time.sleep(5.0)
 
