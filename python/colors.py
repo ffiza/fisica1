@@ -2,7 +2,14 @@ from vpython import vec
 
 
 class Colors:
+    """
+    A class to manage a color palette to be used consistently in all
+    animations.
+    """
     def __init__(self):
+        """
+        The constructor method.
+        """
         self.background = vec(235, 235, 235) / 255
         self.red = vec(255, 89, 94) / 255
         self.yellow = vec(255, 202, 58) / 255
