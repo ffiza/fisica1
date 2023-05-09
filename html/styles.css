@@ -1,15 +1,52 @@
 .title-block {
     line-height: 1;
     margin: 0 0 0.5rem;
+    text-align: center;
 }
 
-.date-text {
-    font-family: MD Primer Bold,Rubik,Lato,Lucida Grande,Lucida Sans Unicode,Tahoma,Sans-Serif;
+.date {
+    font-style: normal;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #525252;
+    font-size: 14px;
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
+
+.title {
     font-style: normal;
     font-weight: 700;
-    text-transform: uppercase;
-    color: #ff7a18;
-    font-size: .66rem;
-    -webkit-margin-end: 0.66rem;
-    margin-inline-end: 0.66rem;
+    font-size: 30px;
+    margin-top: 10px;
+    margin-bottom: 30px;
+}
+
+.exercise {
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    border-radius: 6px;
+    padding: 1em;
+    margin: 3em 5em 3em 5em;
+    flex: 0 0 17.3vw;
+    display: block;
+    background: #fff;
+    transition: all 300ms;
+    font-size: 18px;
+}
+
+.text {
+    margin: 0px;
+}
+
+.diagram {
+    margin: 20px 8px 8px 8px;
+}
+
+.exercise-list {
+    margin: 0px;
+    list-style-type: none;
+}
+
+.exercise-list li:before {
+    content: "(" counter(list-item, lower-alpha) ") ";
 }
