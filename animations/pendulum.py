@@ -10,8 +10,10 @@ from colors import Colors
 MASS: float = 1.0  # kg
 LENGTH: float = 1.5  # m
 GRAVITY: float = 9.8  # m/s^2
-THETA0: float = np.radians(45.0)  # radians
+THETA0: float = np.radians(30.0)  # radians
 OMEGA0: float = 0.0  # 1/s
+# OMEGA0: float = np.sqrt(2 * GRAVITY / LENGTH)  # Stops at theta=pi/2
+# OMEGA0: float = np.sqrt(4 * GRAVITY / LENGTH)  # Stops at theta=pi
 
 # Scene properties
 DEVICE_HEIGHT: float = 1.0  # m
@@ -563,7 +565,7 @@ def create_scene(forces: bool = False, dynamics: bool = False):
     <i>g</i> = {GRAVITY} m/s<sup>2</sup>
     <i>L</i> = {LENGTH} m
     θ<sub>0</sub> = {round(THETA0, 2)} = {round(vp.degrees(THETA0), 2)}°
-    ω<sub>0</sub> = {OMEGA0} 1/s
+    ω<sub>0</sub> = {round(OMEGA0, 2)} 1/s
     """
     vp.scene.range = SCENE_RANGE
     vp.scene.forward = vp.vec(-1, -1, -1)
