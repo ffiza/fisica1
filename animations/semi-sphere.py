@@ -573,14 +573,13 @@ def create_scene(forces: bool = False, dynamics: bool = False):
     vp.scene.width = SCENE_WIDTH
     vp.scene.height = SCENE_HEIGHT
     vp.scene.background = colors.background
-    # TODO: Copy the caption style of pendulum.py
-    vp.scene.caption = """
-    Para rotar la cámara, arrastra con el botón derecho del mouse o arrastra
-    mientras mantienes presionada la tecla Ctrl. Para hacer zoom, usa la rueda
-    de desplazamiento. Para desplazarte hacia la izquierda/derecha y hacia
-    arriba/abajo, arrastra mientras mantienes presionada la tecla Shift. En
-    una pantalla táctil: pellizca/extiende para hacer zoom, desliza o rota
-    con dos dedos.
+    vp.scene.caption = f"""
+    PARÁMETROS DEL PROBLEMA
+    <i>m</i> = {MASS} kg
+    <i>g</i> = {GRAVITY} m/s<sup>2</sup>
+    <i>R</i> = {RADIUS} m
+    θ<sub>0</sub> = {round(THETA0, 2)} = {round(vp.degrees(THETA0), 2)}°
+    ω<sub>0</sub> = {round(OMEGA0, 2)} 1/s
     """
     vp.scene.range = SCENE_RANGE
     vp.scene.forward = vp.vec(-1, -1, -1)
