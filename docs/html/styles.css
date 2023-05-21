@@ -5,28 +5,35 @@
 }
 
 .date {
+    font-family: "Open Sans";
     font-style: normal;
-    font-weight: 900;
-    text-transform: uppercase;
-    color: #525252;
-    font-size: 14px;
+    font-weight: 400;
+    /* text-transform: uppercase; */
+    /* color: #525252; */
+    font-size: 16px;
     margin-top: 30px;
     margin-bottom: 10px;
 }
 
 .title {
+    font-family: "Open Sans";
     font-style: normal;
-    font-weight: 700;
-    font-size: 30px;
+    font-weight: 300;
+    font-size: 40px;
+    padding-bottom: 5px;
+    margin-left: 30%;
+    margin-right: 30%;
     margin-top: 10px;
     margin-bottom: 30px;
+    border-bottom-style: solid;
+    border-color: #A7A7A7;
 }
 
 .exercise {
     box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
     border-radius: 6px;
     padding: 1em;
-    margin: 3em 5% 3em 5%;
+    margin: 3em 15% 3em 15%;
     flex: 0 0 17.3vw;
     display: block;
     background: #fff;
