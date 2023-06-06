@@ -10,10 +10,9 @@ from colors import Colors
 MASS: float = 1.0  # kg
 LENGTH: float = 1.5  # m
 GRAVITY: float = 9.8  # m/s^2
-THETA0: float = np.radians(30.0)  # radians
-OMEGA0: float = 0.0  # 1/s
-# OMEGA0: float = np.sqrt(2 * GRAVITY / LENGTH)  # Stops at theta=pi/2
-# OMEGA0: float = np.sqrt(4 * GRAVITY / LENGTH)  # Stops at theta=pi
+THETA0, OMEGA0 = np.radians(30.0), 0.0  # OMEGA0 in 1/s
+# THETA0, OMEGA0 = 0.0, np.sqrt(2 * GRAVITY / LENGTH)  # Stops at theta=pi/2
+# THETA0, OMEGA0 = 0.0, np.sqrt(4 * GRAVITY / LENGTH)  # Stops at theta=pi
 
 # Scene properties
 DEVICE_HEIGHT: float = 1.0  # m
