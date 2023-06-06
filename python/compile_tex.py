@@ -1,6 +1,9 @@
 import subprocess
 import os
 
+path_to_tex = "docs/"
+path_to_pdf = "pdf/"
+
 
 def get_files_with_extension(dir_path: str, ext: str) -> list:
     """
@@ -37,7 +40,7 @@ def compile_tex_list(files: str) -> None:
     bool
         True if the compilation was successful, False otherwise.
     """
-    os.environ['TEXINPUTS'] = f'.:{"docs/tex/"}:'
+    os.environ['TEXINPUTS'] = f".:{path_to_tex}:"
     for my_file in files:
         try:
             for _ in range(2):
@@ -77,8 +80,8 @@ def move_pdfs(source_path: str, target_path: str) -> None:
     """
     files = os.listdir(os.getcwd())
     for my_file in files:
-        if my_file.endswith("pdf"):
-            os.rename(my_file, f"docs/out/{my_file}")
+        if my_file.endswith(".pdf"):
+            os.rename(my_file, f"{path_to_pdf}{my_file}")
 
 
 def main() -> None:
@@ -86,10 +89,10 @@ def main() -> None:
     Find LaTeX files to compile, compile then, remove auxiliary files and
     move PDFs to output folder.
     """
-    files = get_files_with_extension(dir_path="docs/tex/", ext="tex")
+    files = get_files_with_extension(dir_path=path_to_tex, ext="tex")
     compile_tex_list(files)
-    clean_aux_files(aux_exts=("aux", "log", "out"))
-    move_pdfs(source_path=os.getcwd(), target_path="docs/out/")
+    clean_aux_files(aux_exts=(".aux", ".log", ".out"))
+    move_pdfs(source_path=os.getcwd(), target_path=path_to_pdf)
 
 
 if __name__ == "__main__":
