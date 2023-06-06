@@ -1,0 +1,32 @@
+% mystyle.sty
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{mystyle}
+
+\RequirePackage{titlesec}
+\RequirePackage{xcolor}
+
+\definecolor{PythonGray}{HTML}{7F7F7F}
+\definecolor{PythonBlue}{HTML}{1F77B4}
+\definecolor{PythonRed}{HTML}{D62728}
+
+\renewcommand*\thesection{\arabic{section}}
+
+\titleformat{\section}[hang]{\small\bfseries}%
+{\rlap{\color{PythonGray}\rule[-6pt]{\textwidth}{1.2pt}}\colorbox{PythonGray}{%
+           \raisebox{0pt}[11pt][3pt]{ \makebox[70pt]{% height, width
+                \fontfamily{phv}\selectfont\color{white}{EJERCICIO \thesection}}
+            }}}%
+{5pt}%
+{ \color{PythonGray}#1
+%
+}
+\titlespacing*{\section}{0pt}{3mm}{5mm}
+
+\pgfplotsset{width=7cm, compat=1.8}
+\sisetup{output-decimal-marker = {,}}
+\setlength\parindent{0pt}
+\usetikzlibrary{scopes}
+\renewcommand\thefootnote{\textcolor{PythonBlue}{\arabic{footnote}}}
+\hypersetup{linkcolor=PythonRed}
+
+\endinput
