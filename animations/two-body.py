@@ -298,6 +298,19 @@ def generate_frames(df: pd.DataFrame, show_reference: bool):
 def movie(frames_dir: str = "movies/frames/",
           output_dir: str = "movies/",
           filename: str = "movie") -> None:
+    """
+    Create a movie from the images in `frames_dir`.
+
+    Parameters
+    ----------
+    frames_dir : str, optional
+        The directory of the images, by default "movies/frames/".
+    output_dir : str, optional
+        The directory to save the output file, by default "movies/".
+    filename : str, optional
+        The name of the output file, by default "movie".
+    """
+    # TODO: Implement FPS
     os.system(
         f"ffmpeg -r 100 -i {frames_dir}frame%01d.png "
         f"-vcodec mpeg4 -y {output_dir}{filename}.mp4")
