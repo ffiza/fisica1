@@ -184,6 +184,7 @@ def simulate(mass: float,
 
         acc = force / mass
 
+        # Integrate using the standard Euler method
         vel[i] = vel[i - 1] + acc * timestep
         pos[i] = pos[i - 1] + vel[i - 1] * timestep
 
