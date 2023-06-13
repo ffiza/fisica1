@@ -244,7 +244,6 @@ def multi_width_line(x: np.ndarray,
 def scene(df: pd.DataFrame,
           idx: int,
           frame_path: str,
-          show_reference: bool = False
           ) -> None:
     """
     Create the scene (frame) for row `idx` of `df` and store the image
@@ -258,8 +257,6 @@ def scene(df: pd.DataFrame,
         The row index to represent in the scene.
     frame_path : str
         A path (including file name) to store the image.
-    show_reference : bool
-        Whether to draw reference cirlces or not.
     """
     fig, ax = plt.subplots(figsize=(9.0, 5.0))
     fig.set_facecolor("#010001")
@@ -267,17 +264,6 @@ def scene(df: pd.DataFrame,
     ax.set_ylim((-12, 12))
     ax.set_xticks([])
     ax.set_yticks([])
-
-    # TODO: Think of a useful reference to show
-    # if show_reference:  # Plot reference circles
-    #     d0 = np.abs(df["xpos1"].loc[0] - df["xpos2"].loc[0])
-    #     for diameter in [0.5 * d0, d0, 1.5 * d0]:
-    #         circle = plt.Circle((0, 0), diameter / 2,
-    #                             color='white',
-    #                             alpha=0.3,
-    #                             lw=0.5,
-    #                             fill=False)
-    #         ax.add_patch(circle)
 
     # Plot energy bars
     energies = df[["ElasticPotential",
@@ -373,7 +359,7 @@ def scene(df: pd.DataFrame,
     plt.close()
 
 
-def generate_frames(df: pd.DataFrame, show_reference: bool = False):
+def generate_frames(df: pd.DataFrame):
     """
     Create all the frames of the simulation, for for each row in `df`.
 
@@ -391,7 +377,7 @@ def generate_frames(df: pd.DataFrame, show_reference: bool = False):
         scene(df=df,
               idx=i,
               frame_path=f"movies/frames/frame{i}.png",
-              show_reference=show_reference)
+              )
 
 
 def movie(fps: int,
@@ -478,18 +464,12 @@ def main():
                         required=False,
                         default="movie",
                         help="The name of the output movie.")
-    # parser.add_argument("--show_reference",
-    #                     type=str,
-    #                     required=True,
-    #                     default="no",
-    #                     choices=["yes", "no"],
-    #                     help="Whether to show or not reference circles.")
     parser.add_argument("--fps",
                         type=float,
                         required=True,
                         help="The FPS of the movie.")
     parser.add_argument("--gravity",
-                        type=float,
+                        type=int,
                         required=False,
                         default=0.0,
                         help="The gravitational constant g in m/s^2.")
@@ -507,24 +487,9 @@ def main():
                   timestep=args.timestep,
                   n_steps=args.steps,
                   )
-    # show_reference = True if args.show_reference == "yes" else False
     generate_frames(df=df)
     movie(fps=args.fps, filename=args.filename)
 
 
 if __name__ == "__main__":
     main()
-
-    # spring = create_spring(xy1=(1, 1), xy2=(5, 5), lw=1.0, color="black",
-    #                        n_loops=10, loop_width=0.5, base_fraction=0.2)
-
-    # fig, ax = plt.subplots(figsize=(5.0, 5.0))
-    # ax.set_xlim((-7, 7))
-    # ax.set_ylim((-7, 7))
-    # ax.set_xticks([])
-    # ax.set_yticks([])
-
-    # ax.add_collection(spring)
-
-    # fig.savefig("test.png", dpi=600, pad_inches=0, bbox_inches="tight")
-    # plt.close()
