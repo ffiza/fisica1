@@ -182,8 +182,7 @@ def multi_width_line(x: np.ndarray,
     lws = np.linspace(min_width, max_width, len(x))
     points = np.array([x, y]).T.reshape(-1, 1, 2)
     segments = np.concatenate([points[:-1], points[1:]], axis=1)
-    lc = LineCollection(segments, linewidths=lws, color=color)
-    return lc
+    return LineCollection(segments, linewidths=lws, color=color)
 
 
 def scene(df: pd.DataFrame,
@@ -228,31 +227,29 @@ def scene(df: pd.DataFrame,
     max_energy = np.max(np.abs(energies))
     factor = 10 / max_energy
 
-    rectangles = []
-    rectangles.append(plt.Rectangle(xy=(-21, 0),
-                                    width=1,
-                                    height=df["energy"].loc[idx] * factor,
-                                    color="#fa4656"))
-    rectangles.append(plt.Rectangle(xy=(-19, 0),
-                                    width=1,
-                                    height=df["potential"].loc[idx] * factor,
-                                    color="#a241b2"))
-    rectangles.append(plt.Rectangle(xy=(-17, 0),
-                                    width=1,
-                                    height=df["kinetic1"].loc[idx] * factor,
-                                    color="#2c73d6"))
-    rectangles.append(plt.Rectangle(xy=(-15, 0),
-                                    width=1,
-                                    height=df["kinetic2"].loc[idx] * factor,
-                                    color="#00d75b"))
+    rectangles = [
+        plt.Rectangle(xy=(-21, 0),
+                      width=1,
+                      height=df["energy"].loc[idx] * factor,
+                      color="#fa4656"),
+        plt.Rectangle(xy=(-19, 0),
+                      width=1,
+                      height=df["potential"].loc[idx] * factor,
+                      color="#a241b2"),
+        plt.Rectangle(xy=(-17, 0),
+                      width=1,
+                      height=df["kinetic1"].loc[idx] * factor,
+                      color="#2c73d6"),
+        plt.Rectangle(xy=(-15, 0),
+                      width=1,
+                      height=df["kinetic2"].loc[idx] * factor,
+                      color="#00d75b")]
     for rectangle in rectangles:
         ax.add_patch(rectangle)
 
     # Fix the energy label to avoid changes due to numerical noise
-    if np.mean(df["energy"]) <= 0:
-        label_props = (0.5, "bottom")
-    else:
-        label_props = (-0.5, "top")
+    label_props = (0.5, "bottom") if np.mean(df["energy"]) <= 0 else (-0.5,
+                                                                      "top")
     ax.annotate(text=r"$\mathbf{E}$",
                 xy=(-20.5, label_props[0]),
                 ha="center",
@@ -421,7 +418,7 @@ def main():
                   timestep=args.timestep,
                   n_steps=args.steps,
                   )
-    show_reference = True if args.show_reference == "yes" else False
+    show_reference = args.show_reference == "yes"
     generate_frames(df=df,
                     show_reference=show_reference)
     movie(fps=args.fps, filename=args.filename)
