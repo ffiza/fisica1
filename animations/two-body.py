@@ -4,21 +4,56 @@ Title: A Two-Body Simulation
 
 Examples of ICs
 ---------------
-- Two bodies with some random orbits:
-    --velocity=3.162278 --angle=110.0 --mass=6.0 --distance=6.0 --timestep=0.01
-    --steps=1500 --show_reference="no" --filename="two-body-example1"
-- Two bodies with minimum distance of half the initial separation:
-    --velocity=3.162278 --angle=225.0 --mass=6.0 --distance=6.0 --timestep=0.01
-    --steps=1500 --show_reference="yes" --filename="two-body-example2"
-- Two bodies with some random orbits:
-    --velocity=2.0 --angle=110.0 --mass=6.0 --distance=6.0 --timestep=0.01
-    --steps=1500 --show_reference="no" --filename="two-body-example3"
-- Two bodies with some random orbits with precession due to noise:
-    --velocity=1.0 --angle=45.0 --mass=6.0 --distance=6.0 --timestep=0.01
-    --steps=1500 --show_reference="no" --filename="two-body-example4"
-- Two bodies with with no precession due to decreased time step:
-    --velocity=1.0 --angle=45.0 --mass=6.0 --distance=6.0 --timestep=0.001
-    --steps=15000 --show_reference="no" --filename="two-body-example5"
+two-body-example1
+    --velocity=3.162278
+    --angle=110.0
+    --mass=6.0
+    --distance=6.0
+    --timestep=0.01
+    --steps=1500
+    --show_reference="no"
+    --fps=100
+    --filename="two-body-example1"
+two-body-example2
+    --velocity=3.162278
+    --angle=225.0
+    --mass=6.0
+    --distance=6.0
+    --timestep=0.01
+    --steps=1500
+    --show_reference="yes"
+    --fps=100
+    --filename="two-body-example2"
+two-body-example3
+    --velocity=2.0
+    --angle=110.0
+    --mass=6.0
+    --distance=6.0
+    --timestep=0.01
+    --steps=1500
+    --show_reference="no"
+    --fps=100
+    --filename="two-body-example3"
+two-body-example4
+    --velocity=1.0
+    --angle=45.0
+    --mass=6.0
+    --distance=6.0
+    --timestep=0.01
+    --steps=1500
+    --show_reference="no"
+    --fps=100
+    --filename="two-body-example4"
+two-body-example5 (output one every 10 frames)
+    --velocity=1.0
+    --angle=45.0
+    --mass=6.0
+    --distance=6.0
+    --timestep=0.001
+    --steps=15000
+    --show_reference="no"
+    --fps=100
+    --filename="two-body-example5"
 """
 
 import os
@@ -96,6 +131,7 @@ def simulate(m1: float,
         a1 = - force / m1
         a2 = + force / m2
 
+        # Use the semi-implicit Euler method
         v1[i] = v1[i - 1] + a1 * timestep
         v2[i] = v2[i - 1] + a2 * timestep
         r1[i] = r1[i - 1] + v1[i] * timestep
@@ -295,7 +331,8 @@ def generate_frames(df: pd.DataFrame, show_reference: bool):
               show_reference=show_reference)
 
 
-def movie(frames_dir: str = "movies/frames/",
+def movie(fps: int,
+          frames_dir: str = "movies/frames/",
           output_dir: str = "movies/",
           filename: str = "movie") -> None:
     """
@@ -303,6 +340,8 @@ def movie(frames_dir: str = "movies/frames/",
 
     Parameters
     ----------
+    fps : int
+        The frames per second of the movie.
     frames_dir : str, optional
         The directory of the images, by default "movies/frames/".
     output_dir : str, optional
@@ -310,9 +349,8 @@ def movie(frames_dir: str = "movies/frames/",
     filename : str, optional
         The name of the output file, by default "movie".
     """
-    # TODO: Implement FPS
     os.system(
-        f"ffmpeg -r 100 -i {frames_dir}frame%01d.png "
+        f"ffmpeg -r {fps} -i {frames_dir}frame%01d.png "
         f"-vcodec mpeg4 -y {output_dir}{filename}.mp4")
     shutil.rmtree(frames_dir)
 
@@ -366,6 +404,10 @@ def main():
                         default="no",
                         choices=["yes", "no"],
                         help="Whether to show or not reference circles.")
+    parser.add_argument("--fps",
+                        type=int,
+                        required=True,
+                        help="The FPS of the movie.")
     args = parser.parse_args()
 
     df = simulate(m1=args.mass,
@@ -382,7 +424,7 @@ def main():
     show_reference = True if args.show_reference == "yes" else False
     generate_frames(df=df,
                     show_reference=show_reference)
-    movie(filename=args.filename)
+    movie(fps=args.fps, filename=args.filename)
 
 
 if __name__ == "__main__":
