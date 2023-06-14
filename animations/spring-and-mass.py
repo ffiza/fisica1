@@ -128,9 +128,7 @@ def create_spring(xy1: Tuple[float, float],
 
     points = np.array([x_points, y_points]).T.reshape(-1, 1, 2)
     segments = np.concatenate([points[:-1], points[1:]], axis=1)
-    spring = LineCollection(segments, linewidths=lw, color=color)
-
-    return spring
+    return LineCollection(segments, linewidths=lw, color=color)
 
 
 def simulate(mass: float,
@@ -185,6 +183,7 @@ def simulate(mass: float,
         acc = force / mass
 
         # Integrate using the standard Euler method
+        # TODO: Maybe test the semi-implicit Euler method for better results?
         vel[i] = vel[i - 1] + acc * timestep
         pos[i] = pos[i - 1] + vel[i - 1] * timestep
 
@@ -238,8 +237,7 @@ def multi_width_line(x: np.ndarray,
     lws = np.linspace(min_width, max_width, len(x))
     points = np.array([x, y]).T.reshape(-1, 1, 2)
     segments = np.concatenate([points[:-1], points[1:]], axis=1)
-    lc = LineCollection(segments, linewidths=lws, color=color)
-    return lc
+    return LineCollection(segments, linewidths=lws, color=color)
 
 
 def scene(df: pd.DataFrame,
@@ -273,27 +271,28 @@ def scene(df: pd.DataFrame,
     max_energy = np.max(np.abs(energies))
     factor = 10 / max_energy
 
-    rectangles = []
-    rectangles.append(plt.Rectangle(
-        xy=(-21, 0),
-        width=1,
-        height=df["Energy"].loc[idx] * factor,
-        color="#fa4656"))
-    rectangles.append(plt.Rectangle(
-        xy=(-19, 0),
-        width=1,
-        height=df["ElasticPotential"].loc[idx] * factor,
-        color="#a241b2"))
-    rectangles.append(plt.Rectangle(
-        xy=(-17, 0),
-        width=1,
-        height=df["GravitationalPotential"].loc[idx] * factor,
-        color="#fef058"))
-    rectangles.append(plt.Rectangle(
-        xy=(-15, 0),
-        width=1,
-        height=df["KineticEnergy"].loc[idx] * factor,
-        color="#2c73d6"))
+    rectangles = [
+        plt.Rectangle(
+            xy=(-21, 0),
+            width=1,
+            height=df["Energy"].loc[idx] * factor,
+            color="#fa4656"),
+        plt.Rectangle(
+            xy=(-19, 0),
+            width=1,
+            height=df["ElasticPotential"].loc[idx] * factor,
+            color="#a241b2"),
+        plt.Rectangle(
+            xy=(-17, 0),
+            width=1,
+            height=df["GravitationalPotential"].loc[idx] * factor,
+            color="#fef058"),
+        plt.Rectangle(
+            xy=(-15, 0),
+            width=1,
+            height=df["KineticEnergy"].loc[idx] * factor,
+            color="#2c73d6")
+    ]
     for rectangle in rectangles:
         ax.add_patch(rectangle)
 
