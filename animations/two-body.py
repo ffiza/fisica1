@@ -119,7 +119,6 @@ def simulate(m1: float,
 
     r1[0] = r1_initial
     r2[0] = r2_initial
-
     v1[0] = v1_initial
     v2[0] = v2_initial
 
@@ -176,7 +175,7 @@ def multi_width_line(x: np.ndarray,
 
     Returns
     -------
-    lc : LineCollection
+    LineCollection
         The LineCollection instance.
     """
     lws = np.linspace(min_width, max_width, len(x))
