@@ -43,3 +43,9 @@ The same case as `two-body-example4.mp4` but with a smaller timestep to prevent 
 To reproduce this animation, run:
 
 ```python animations/nbody.py --masses 6.0 6.0 --xpositions 3.0 -3.0 --ypositions 0.0 0.0 --xvelocities 0.7071 -0.7071 --yvelocities 0.7071 -0.7071 --timestep 0.001 --steps 15000 --fps 50 --one_every 20 --filename "two-body-example5"```
+
+### ```four-body-example1.mp4```
+
+An example of four particles orbiting in a symmetrical configuration until numerical errors induce perturbations in the orbits.
+
+```python animations/nbody.py --masses 1.0 1.0 1.0 1.0 --xpositions -2.0 0.0 2.0 0.0 --ypositions 0.0 2.0 0.0 -2.0 --xvelocities 0.0 1.0 0.0 -1.0 --yvelocities 1.0 0.0 -1.0 0.0 --timestep 0.001 --steps 20000 --fps 50 --one_every 20 --filename "four-body-example1"```
