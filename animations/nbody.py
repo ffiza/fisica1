@@ -510,5 +510,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# python animations/nbody.py --masses 1.0 1.0 1.0 1.0 --xpositions -2.0 0.0 2.0 0.0 --ypositions 0.0 2.0 0.0 -2.0 --xvelocities 0.0 1.0 0.0 -1.0 --yvelocities 1.0 0.0 -1.0 0.0 --timestep 0.001 --steps 10000 --fps 50 --one_every 20 --filename "nbody-example1"
