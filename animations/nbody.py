@@ -1,9 +1,6 @@
 """
 Title: An N-Body Simulation
-
-
-Examples of ICs
----------------
+Author: Federico Iza
 """
 
 import itertools
