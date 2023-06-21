@@ -25,10 +25,10 @@ COLORS: list = [RED, BLUE, GREEN, YELLOW, ORANGE, VIOLET]
 BACKGROUND: str = "#010001"
 
 
-def calculate_forces(masses: np.ndarray,
-                     xposs: np.ndarray,
-                     yposs: np.ndarray,
-                     ) -> np.ndarray:
+def _calculate_forces(masses: np.ndarray,
+                      xposs: np.ndarray,
+                      yposs: np.ndarray,
+                      ) -> np.ndarray:
     """
     Calculate a 3D array with the forces of a given particle. Element
     `[i, j, 0]` of the array is the force acting on particle `i` due to
@@ -67,10 +67,10 @@ def calculate_forces(masses: np.ndarray,
     return forces
 
 
-def calculate_gravitational_potential(masses: np.ndarray,
-                                      xposs: np.ndarray,
-                                      yposs: np.ndarray,
-                                      ) -> np.ndarray:
+def _calculate_gravitational_potential(masses: np.ndarray,
+                                       xposs: np.ndarray,
+                                       yposs: np.ndarray,
+                                       ) -> np.ndarray:
     """
     Calculate a the total gravitational potential of the system at the
     given state.
@@ -100,10 +100,10 @@ def calculate_gravitational_potential(masses: np.ndarray,
     return potential
 
 
-def calculate_kinetic_energy(masses: np.ndarray,
-                             xvels: np.ndarray,
-                             yvels: np.ndarray,
-                             ) -> np.ndarray:
+def _calculate_kinetic_energy(masses: np.ndarray,
+                              xvels: np.ndarray,
+                              yvels: np.ndarray,
+                              ) -> np.ndarray:
     """
     Calculate a the total kinetic energy of the system.
 
@@ -192,9 +192,9 @@ def simulate(masses: list,
     # Integrate using the leapfrog method
     for step in range(1, n_steps):
         # Calculate the forces acting on the particles on previous step
-        forces_then = calculate_forces(masses=masses,
-                                       xposs=xposs[step - 1],
-                                       yposs=yposs[step - 1])
+        forces_then = _calculate_forces(masses=masses,
+                                        xposs=xposs[step - 1],
+                                        yposs=yposs[step - 1])
         # Update the positions
         for k in range(n_bodies):
             acc_then = forces_then[k].sum(axis=0) / masses[k]
@@ -205,9 +205,9 @@ def simulate(masses: list,
                 + yvels[step - 1, k] * timestep \
                 + 0.5 * acc_then[1] * timestep**2
         # Recalculate the force in the current step
-        forces_now = calculate_forces(masses=masses,
-                                      xposs=xposs[step],
-                                      yposs=yposs[step])
+        forces_now = _calculate_forces(masses=masses,
+                                       xposs=xposs[step],
+                                       yposs=yposs[step])
         # Update the velocities
         for k in range(n_bodies):
             acc_then = forces_then[k].sum(axis=0) / masses[k]
@@ -231,12 +231,12 @@ def simulate(masses: list,
     kinetic_energies = np.zeros(len(df))
     potentials = np.zeros(len(df))
     for i in range(len(df)):
-        kinetic_energies[i] = calculate_kinetic_energy(masses=masses,
-                                                       xvels=xvels[i],
-                                                       yvels=yvels[i])
-        potentials[i] = calculate_gravitational_potential(masses=masses,
-                                                          xposs=xposs[i],
-                                                          yposs=yposs[i])
+        kinetic_energies[i] = _calculate_kinetic_energy(masses=masses,
+                                                        xvels=xvels[i],
+                                                        yvels=yvels[i])
+        potentials[i] = _calculate_gravitational_potential(masses=masses,
+                                                           xposs=xposs[i],
+                                                           yposs=yposs[i])
     df["KineticEnergy"] = kinetic_energies
     df["Potential"] = potentials
     df["Energy"] = df["KineticEnergy"] + df["Potential"]
@@ -246,11 +246,11 @@ def simulate(masses: list,
     return df
 
 
-def multi_width_line(x: np.ndarray,
-                     y: np.ndarray,
-                     color: str = "black",
-                     max_width: float = 2.5,
-                     min_width: float = 0.0) -> LineCollection:
+def _multi_width_line(x: np.ndarray,
+                      y: np.ndarray,
+                      color: str = "black",
+                      max_width: float = 2.5,
+                      min_width: float = 0.0) -> LineCollection:
     """
     Create a LineCollection instance that can be used as a line with
     different widths.
@@ -279,10 +279,10 @@ def multi_width_line(x: np.ndarray,
     return LineCollection(segments, linewidths=lws, color=color)
 
 
-def scene(df: pd.DataFrame,
-          idx: int,
-          frame_path: str,
-          ) -> None:
+def _scene(df: pd.DataFrame,
+           idx: int,
+           frame_path: str,
+           ) -> None:
     """
     Create the scene (frame) for row `idx` of `df` and store the image
     at `frame_path`.
@@ -371,9 +371,9 @@ def scene(df: pd.DataFrame,
 
     for i in range(n_bodies):
         # Plot the trail of each particle
-        lc = multi_width_line(x=df[f"xPosition{i}"].to_numpy()[:idx + 1],
-                              y=df[f"yPosition{i}"].to_numpy()[:idx + 1],
-                              color=COLORS[i])
+        lc = _multi_width_line(x=df[f"xPosition{i}"].to_numpy()[:idx + 1],
+                               y=df[f"yPosition{i}"].to_numpy()[:idx + 1],
+                               color=COLORS[i])
         ax.add_collection(lc)
 
         # Plot the particles as circles
@@ -408,9 +408,9 @@ def generate_frames(df: pd.DataFrame, one_every: int = 1):
     j = 0
     for i in tqdm(range(n_frames)):
         if i == 0 or i % one_every == 0:
-            scene(df=df,
-                  idx=i,
-                  frame_path=f"movies/frames/frame{j}.png")
+            _scene(df=df,
+                   idx=i,
+                   frame_path=f"movies/frames/frame{j}.png")
             j += 1
 
 
