@@ -9,6 +9,7 @@ def _calculate_forces(masses: np.ndarray,
                       xposs: np.ndarray,
                       yposs: np.ndarray,
                       grav_const: float,
+                      softening: float,
                       ) -> np.ndarray:
     """
     Calculate a 3D array with the forces of a given particle. Element
@@ -26,6 +27,8 @@ def _calculate_forces(masses: np.ndarray,
         The y-positions of the particles.
     grav_const : float
         The gravitational constant in m^3 / kg / s^2.
+    softening : float
+        The softening length to use in the force calculation in m.
 
     Returns
     -------
@@ -44,7 +47,8 @@ def _calculate_forces(masses: np.ndarray,
     for i, j in itertools.product(range(n_bodies), range(n_bodies)):
         if j > i:
             forces[i, j] = - grav_const * masses[i] \
-                * masses[j] * dr[i, j] / np.linalg.norm(dr[i, j])**3
+                * masses[j] * dr[i, j] / \
+                (np.linalg.norm(dr[i, j])**2 + softening**2)**(3 / 2)
             forces[j, i] = - forces[i, j]
 
     return forces
@@ -119,6 +123,7 @@ def simulate(masses: list,
              initial_xvels: list,
              initial_yvels: list,
              grav_const: float,
+             softening: float,
              timestep: float,
              n_steps: int,
              filename: str,
@@ -140,6 +145,8 @@ def simulate(masses: list,
         A list with the initial velocities of the particles in the y-axis.
     grav_const : float
         The gravitational constant in m^3 / kg / s^2.
+    softening : float
+        The softening length to use in the force calculation in m.
     timestep : float
         The timestep of the simulation.
     n_steps : int
@@ -178,7 +185,8 @@ def simulate(masses: list,
         forces_then = _calculate_forces(masses=masses,
                                         xposs=xposs[step - 1],
                                         yposs=yposs[step - 1],
-                                        grav_const=grav_const)
+                                        grav_const=grav_const,
+                                        softening=softening)
         # Update the positions
         for k in range(n_bodies):
             acc_then = forces_then[k].sum(axis=0) / masses[k]
@@ -192,7 +200,8 @@ def simulate(masses: list,
         forces_now = _calculate_forces(masses=masses,
                                        xposs=xposs[step],
                                        yposs=yposs[step],
-                                       grav_const=grav_const)
+                                       grav_const=grav_const,
+                                       softening=softening)
         # Update the velocities
         for k in range(n_bodies):
             acc_then = forces_then[k].sum(axis=0) / masses[k]
@@ -254,6 +263,7 @@ def main():
              initial_xvels=config["xvelocities"],
              initial_yvels=config["yvelocities"],
              grav_const=config["grav_const"],
+             softening=config["softening_length"],
              timestep=config["timestep"],
              n_steps=config["n_steps"],
              filename=config["filename"])
