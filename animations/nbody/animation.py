@@ -51,7 +51,7 @@ class Animation:
         # Define scaling factor for energy bars
         energies = self.data[["Potential", "KineticEnergy", "Energy"]]
         max_energy = np.max(np.abs(energies.to_numpy()))
-        self.factor = self.height / max_energy / 2
+        self.factor = self.height / max_energy / 4
 
         # Setup fonts
         self.font = pygame.font.SysFont("arial", 30)
