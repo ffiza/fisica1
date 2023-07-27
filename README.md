@@ -1,54 +1,55 @@
-# Física 1
+# Animaciones de problemas físicos
 
-Scripts escritos en Python para generar animaciones para la materia Física 1 de la Facultad de Ciencias Exactas y Naturales de la Universidad de Buenos Aires.
+Scripts escritos en Python para generar animaciones de problemas físicos.
 
 Algunas animaciones pueden encontrarse en [YouTube](https://www.youtube.com/fgiza/videos).
 
-## Problema de $N$-cuerpos
+## Problema de $N$-cuerpos (`animations/nbody/`)
 
-### [Ejemplo 1](https://youtu.be/I3U7MGbQIdA): Órbitas parabólicas
+Ejemplos de simulaciones de sistemas de $N$-cuerpos mediante gravedad newtoniana. Los archivos de configuración para cada simulación pueden encontrarse en `animations/nbody/configs/` en formato `yml`; los resultados de cada corrida son almacenados en `animations/nbody/data/`. Cada simulación tiene un nombre asignado, según se describe a continuación.
+
+Para generar los resultados de una simulación dada (por ejemplo, `two_body_example1`), correr:
+
+```
+python animations/nbody/animation.py --simulation "two_body_example1"
+```
+
+Para generar una película, utilizar `save_frames: true` en el archivo de configuración, y, luego de correr la simulación, ejecutar:
+
+```
+python animations/nbody/movie.py --simulation "two_body_example1" --delete_frames "yes"
+```
+
+El último argumento borra todos los frames una vez creada la película.
+
+Para correr tus propias simulaciones, podés crear un nuevo archivo de configuarción en el directorio `animations/nbody/configs/` y luego ejecutar la simulación y/o animación.
+
+### Algunos ejemplos
+
+#### [Ejemplo 1](https://youtu.be/I3U7MGbQIdA): Órbitas parabólicas (`two_body_example1`)
 
 Un ejemplo de dos cuerpos que describen órbitas parabólicas (la energía mecánica total del sistema es nula).
 
-Para reproducir esta animación, correr:
-
-```python animations/nbody.py --masses 6.0 6.0 --xpositions 3.0 -3.0 --ypositions 0.0 0.0 --xvelocities -1.0816 1.0816 --yvelocities 2.9716 -2.9716 --timestep 0.001 --steps 15000 --fps 50 --one_every 20 --filename "two-body-example1"```
-
-### [Ejemplo 2](https://youtu.be/8C-GpehjkiU): Órbitas parabólicas
+#### [Ejemplo 2](https://youtu.be/8C-GpehjkiU): Órbitas parabólicas (`two_body_example2`)
 
 Un ejemplo de dos cuerpos que describen órbitas parabólicas, pero la mínima distancia entre ambos en la mitad de la distancia inicial.
 
-Para reproducir esta animación, correr:
-
-```python animations/nbody.py --masses 6.0 6.0 --xpositions 3.0 -3.0 --ypositions 0.0 0.0 --xvelocities -2.2361 2.2361 --yvelocities -2.2361 2.2361 --timestep 0.001 --steps 15000 --fps 50 --one_every 20 --filename "two-body-example2"```
-
-### [Ejemplo 3](https://youtu.be/itIvMWKCWQ0): Órbitas elípticas
-
+#### [Ejemplo 3](https://youtu.be/itIvMWKCWQ0): Órbitas elípticas (`two_body_example3`)
 
 Un ejemplo de dos cuerpos con energía mecánica total negativa que describen órbitas elípticas.
 
-Para reproducir esta animación, correr:
+#### [Ejemplo 4](https://youtu.be/DUorm2F3x1w): Órbitas elípticas con errores numéricos (`two_body_example4`)
 
-```python animations/nbody.py --masses 6.0 6.0 --xpositions 3.0 -3.0 --ypositions 0.0 0.0 --xvelocities -0.6840 0.6840 --yvelocities 1.8794 -1.8794 --timestep 0.001 --steps 15000 --fps 50 --one_every 20 --filename "two-body-example3"```
+Un ejemplo de dos cuerpos con energía mecánica total negativa que describen órbitas elípticas claramente distorsionadas debido a errores numéricos en la integración de las ecuaciones diferenciales.
 
-### [Ejemplo 4](https://youtu.be/DUorm2F3x1w): Órbitas elípticas con errores numéricos
-
-Un ejemplo de dos cuerpos con energía mecánica total negativa que describen órbitas elípticas claramente distorsionadas debido a errores nuḿericos en la integración de las ecuaciones diferenciales.
-
-Para reproducir esta animación, correr:
-
-```python animations/nbody.py --masses 6.0 6.0 --xpositions 3.0 -3.0 --ypositions 0.0 0.0 --xvelocities 0.7071 -0.7071 --yvelocities 0.7071 -0.7071 --timestep 0.01 --steps 1500 --fps 50 --one_every 2 --filename "two-body-example4"```
-
-### [Ejemplo 5](https://youtu.be/Qin4mXVgOFM): Órbitas elípticas con mayor resolución temporal
+#### [Ejemplo 5](https://youtu.be/Qin4mXVgOFM): Órbitas elípticas con mayor resolución temporal (`two_body_example5`)
 
 El caso anterior, pero con un paso temporal menor para prevenir errores numéricos en la integración.
 
-Para reproducir esta animación, correr:
-
-```python animations/nbody.py --masses 6.0 6.0 --xpositions 3.0 -3.0 --ypositions 0.0 0.0 --xvelocities 0.7071 -0.7071 --yvelocities 0.7071 -0.7071 --timestep 0.001 --steps 15000 --fps 50 --one_every 20 --filename "two-body-example5"```
-
-### Ejemplo 6: Cuatro cuerpos con errores numéricos
+#### Ejemplo 6: Cuatro cuerpos con errores numéricos (`four_body_example1`)
 
 Un ejemplo de cuatro partículas que orbitan partiendo de una condición inicial simétrica hasta que errores numéricos inducen perturbaciones en las órbitas.
 
-```python animations/nbody.py --masses 1.0 1.0 1.0 1.0 --xpositions -2.0 0.0 2.0 0.0 --ypositions 0.0 2.0 0.0 -2.0 --xvelocities 0.0 1.0 0.0 -1.0 --yvelocities 1.0 0.0 -1.0 0.0 --timestep 0.001 --steps 20000 --fps 50 --one_every 20 --filename "four-body-example1"```
+#### Ejemplo 7: Diez cuerpos con errores numéricos (`nbody_example1`)
+
+Un ejemplo de diez partículas que orbitan. Cuando la distancia entre dos partículas dadas se hace muy pequeña, la fuerza gravitatoria diverge y las mismas son disparadas en direcciones opuestas.

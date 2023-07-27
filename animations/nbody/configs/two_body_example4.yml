@@ -1,0 +1,30 @@
+filename: "two_body_example4"
+
+# Simulation
+masses: [6.0, 6.0]  # kg
+xpositions: [3.0, -3.0]  # m
+ypositions: [0.0, 0.0]  # m
+xvelocities: [0.7071, -0.7071]  # m/s
+yvelocities: [0.7071, -0.7071]  # m/s
+timestep: 0.01  # s
+n_steps: 1500
+softening_length: 0.0  # m
+grav_const: 10.0  # m^3 / kg / s^2
+
+# Visualization
+fps: 50
+one_every: 2
+save_frames: false
+scene_xlim: [-16.0, 16.0]
+scene_ylim: [-9.0, 9.0]
+width: 1920
+height: 1080
+window_name: "The N-Body Problem"
+text_start_frac: 0.02
+bar_width_frac: 0.02
+bar_sep_frac: 0.03
+text_offset: 0.009
+part_colors: ["#FA4656", "#2C73D6", "#00D75B", "#FEF058", "#FFAA4C", "#A241B2"]
+ind_color: "#D3D3D3"
+bg_color: "#010001"
+  
