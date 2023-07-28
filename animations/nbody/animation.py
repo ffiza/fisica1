@@ -55,7 +55,6 @@ class Animation:
 
         # Setup fonts
         self.font = pygame.font.SysFont("arial", 30)
-        self.bold_font = pygame.font.SysFont("arial", 30, bold=True)
 
         # Directory for frames for movie
         self.frames_dir = "animations/nbody/movies/frames/"
@@ -163,9 +162,9 @@ class Animation:
         dy = self.config["text_offset"] * self.height
         letters = ["E", "U", "K"]
         for i, energy in enumerate(["Energy", "Potential", "KineticEnergy"]):
-            text = self.bold_font.render(letters[i],
-                                         True,
-                                         self.config["ind_color"])
+            text = self.font.render(letters[i],
+                                    True,
+                                    self.config["ind_color"])
             if self.data[energy].iloc[idx] >= 0:
                 self.screen.blit(
                     text,
@@ -282,20 +281,20 @@ class Animation:
         idx = 0
         while True:  # Main game loop
             self._check_events()
-            if self.running:
-                if idx >= len(self.data):
-                    # Quit the animation if simulation reaches the end
-                    self._quit()
-                self.screen.fill(self.config["bg_color"])
-                self._draw_elements(idx=idx)
-                pygame.display.flip()
-                self.clock.tick(self.config["fps"])
+            if idx >= len(self.data):
+                # Quit the animation if simulation reaches the end
+                self._quit()
+            self.screen.fill(self.config["bg_color"])
+            self._draw_elements(idx=idx)
+            self.clock.tick(self.config["fps"])
 
+            if self.running:
                 # Create frames if `save_frames` is True
                 if self.config["save_frames"]:
                     self._save_screen_as_img(
                         frame_idx=int(idx // self.config["one_every"]))
 
+                # Advance to the next frame
                 idx += self.config["one_every"]
             else:
                 text = self.font.render(
@@ -306,7 +305,7 @@ class Animation:
                     text,
                     text.get_rect(topright=(self.width - 0.05 * self.height,
                                             0.05 * self.height)))
-                pygame.display.flip()
+            pygame.display.flip()
 
 
 def main():
