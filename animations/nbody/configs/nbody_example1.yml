@@ -14,7 +14,7 @@ grav_const: 10.0  # m^3 / kg / s^2
 # Visualization
 fps: 50
 one_every: 20
-save_frames: true
+save_frames: false
 scene_xlim: [-16.0, 16.0]
 scene_ylim: [-9.0, 9.0]
 width: 1920

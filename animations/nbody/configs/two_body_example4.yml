@@ -7,14 +7,14 @@ ypositions: [0.0, 0.0]  # m
 xvelocities: [0.7071, -0.7071]  # m/s
 yvelocities: [0.7071, -0.7071]  # m/s
 timestep: 0.01  # s
-n_steps: 1500
+n_steps: 6000
 softening_length: 0.0  # m
 grav_const: 10.0  # m^3 / kg / s^2
 
 # Visualization
 fps: 50
 one_every: 2
-save_frames: false
+save_frames: true
 scene_xlim: [-16.0, 16.0]
 scene_ylim: [-9.0, 9.0]
 width: 1920

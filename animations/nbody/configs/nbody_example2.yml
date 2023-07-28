@@ -1,0 +1,30 @@
+filename: "nbody_example2"
+
+# Simulation
+masses: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]  # kg
+xpositions: [-2.0, 3.0, 1.0, 2.0, -7.0, 6.0, 4.0, 1.5, 4.3, 0.0]  # m
+ypositions: [0.0, 1.0, -2.0, 3.8, -1.7, 2.6, 1.3, 6.2, 0.0, -2.0]  # m
+xvelocities: [0.0, 1.0, 0.0, -1.0, -1.5, 1.7, -1.7, 1.5, -2.3, 2.3]  # m/s
+yvelocities: [1.0, 0.0, -1.0, 0.0, 0.7, -0.7, 1.3, 1.5, -1.3, -1.5]  # m/s
+timestep: 0.001  # s
+n_steps: 20000
+softening_length: 0.05  # m
+grav_const: 10.0  # m^3 / kg / s^2
+
+# Visualization
+fps: 50
+one_every: 20
+save_frames: false
+scene_xlim: [-16.0, 16.0]
+scene_ylim: [-9.0, 9.0]
+width: 1920
+height: 1080
+window_name: "The N-Body Problem"
+text_start_frac: 0.02
+bar_width_frac: 0.02
+bar_sep_frac: 0.03
+text_offset: 0.009
+part_colors: ["#FA4656", "#2C73D6", "#00D75B", "#FEF058", "#FFAA4C", "#A241B2"]
+ind_color: "#D3D3D3"
+bg_color: "#010001"
+  

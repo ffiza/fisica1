@@ -5,9 +5,9 @@ masses: [6.0, 6.0]  # kg
 xpositions: [3.0, -3.0]  # m
 ypositions: [0.0, 0.0]  # m
 xvelocities: [0.7071, -0.7071]  # m/s
-yvelocities: [0.7971, -0.7071]  # m/s
+yvelocities: [0.7071, -0.7071]  # m/s
 timestep: 0.001  # s
-n_steps: 15000
+n_steps: 30000
 softening_length: 0.0  # m
 grav_const: 10.0  # m^3 / kg / s^2
 
