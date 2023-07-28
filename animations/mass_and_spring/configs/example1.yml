@@ -1,0 +1,30 @@
+filename: "example1"
+
+# Simulation
+mass: 1.0  # kg
+grav_const: 0.0  # m/s^2
+elastic_const: 1.0  # N/m
+natural_length: 5.0  # m
+xposition: 6.5  # m
+yposition: 0.0  # m
+xvelocity: 0.0  # m/s
+yvelocity: 0.0  # m/s
+timestep: 0.01  # s
+n_steps: 6000
+
+# Visualization
+fps: 50
+one_every: 2
+save_frames: false
+scene_xlim: [-16.0, 16.0]
+scene_ylim: [-9.0, 9.0]
+width: 1920
+height: 1080
+window_name: "Mass and Spring"
+text_start_frac: 0.02
+bar_width_frac: 0.02
+bar_sep_frac: 0.03
+text_offset: 0.009
+main_color: "#D3D3D3"
+part_color: "#1F77B4"
+bg_color: "#010001"
