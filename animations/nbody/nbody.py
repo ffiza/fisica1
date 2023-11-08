@@ -58,7 +58,7 @@ def _calculate_gravitational_potential(masses: np.ndarray,
                                        xposs: np.ndarray,
                                        yposs: np.ndarray,
                                        grav_const: float
-                                       ) -> np.ndarray:
+                                       ) -> float:
     """
     Calculate a the total gravitational potential of the system at the
     given state.
@@ -93,7 +93,7 @@ def _calculate_gravitational_potential(masses: np.ndarray,
 def _calculate_kinetic_energy(masses: np.ndarray,
                               xvels: np.ndarray,
                               yvels: np.ndarray,
-                              ) -> np.ndarray:
+                              ) -> float:
     """
     Calculate a the total kinetic energy of the system.
 
