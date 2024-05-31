@@ -238,7 +238,7 @@ def simulate(masses: list,
     df["Potential"] = potentials
     df["Energy"] = df["KineticEnergy"] + df["Potential"]
 
-    df.to_csv(f"animations/nbody/data/{filename}.csv")
+    df.to_csv(f"data/{filename}.csv")
 
     return df
 
@@ -254,7 +254,7 @@ def main():
 
     # Read configuration file
     config = yaml.safe_load(
-        open(f"animations/nbody/configs/{args.config}.yml"))
+        open(f"configs/{args.config}.yml"))
 
     # Run simulation
     simulate(masses=config["masses"],

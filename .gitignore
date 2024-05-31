@@ -1,5 +1,6 @@
 .vscode
+.venv
 **/__pycache__
-old_movies/
-animations/nbody/movies
+movies/
 trash/
+frames/

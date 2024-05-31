@@ -6,8 +6,8 @@ import argparse
 
 def movie(fps: int,
           remove_frames: bool,
-          frames_dir: str = "animations/nbody/movies/frames/",
-          output_dir: str = "animations/nbody/movies/",
+          frames_dir: str = "frames/",
+          output_dir: str = "movies/",
           filename: str = "movie") -> None:
     """
     Create a movie from the images in `frames_dir`.
@@ -35,7 +35,7 @@ def movie(fps: int,
 def main():
     # Get simulation file name
     parser = argparse.ArgumentParser()
-    parser.add_argument("--simulation",
+    parser.add_argument("--config",
                         type=str,
                         required=True,
                         help="The name of the simulation.")
@@ -48,13 +48,12 @@ def main():
 
     # Read configuration file
     config = yaml.safe_load(
-        open(f"animations/nbody/configs/{args.simulation}.yml"))
+        open(f"configs/{args.config}.yml"))
 
     # Create movie
     movie(fps=config["fps"],
           remove_frames=args.delete_frames == "yes",
           filename=config["filename"])
-
 
 if __name__ == "__main__":
     main()

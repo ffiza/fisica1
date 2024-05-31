@@ -41,7 +41,7 @@ class Animation:
 
         # Read data and transform coordinates
         self.data = pd.read_csv(
-            f"animations/nbody/data/{config['filename']}.csv")
+            f"data/{config['filename']}.csv")
         for i in range(self.n_bodies):
             self.data[f"xPosition{i}"], self.data[f"yPosition{i}"] = \
                 self._transform_coordinates(
@@ -57,7 +57,7 @@ class Animation:
         self.font = pygame.font.SysFont("arial", 30)
 
         # Directory for frames for movie
-        self.frames_dir = "animations/nbody/movies/frames/"
+        self.frames_dir = "frames/"
 
     @staticmethod
     def _quit() -> None:
@@ -311,7 +311,7 @@ class Animation:
 def main():
     # Get simulation name
     parser = argparse.ArgumentParser()
-    parser.add_argument("--simulation",
+    parser.add_argument("--config",
                         type=str,
                         required=True,
                         help="The simulation to animate.")
@@ -319,7 +319,7 @@ def main():
 
     # Load configuration file
     config = yaml.safe_load(
-        open(f"animations/nbody/configs/{args.simulation}.yml"))
+        open(f"configs/{args.config}.yml"))
 
     # Run the PyGame animation
     animation = Animation(config=config)
