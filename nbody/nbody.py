@@ -111,10 +111,7 @@ def _calculate_kinetic_energy(masses: np.ndarray,
     float
         The total kinetic energy.
     """
-    energy = 0.0
-    for i in range(len(masses)):
-        energy += 0.5 * masses[i] * (xvels[i]**2 + yvels[i]**2)
-    return energy
+    return 0.5 * np.sum(masses * (xvels**2 + yvels**2))
 
 
 def simulate(masses: list,
