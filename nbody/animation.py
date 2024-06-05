@@ -268,7 +268,7 @@ class Animation:
             self._check_events()
             if self.idx >= len(self.data):
                 self._reset_animation()
-                
+
             self.screen.fill(self.config["BACKGROUND_COLOR"])
             self._draw_elements(idx=self.idx)
             self.clock.tick(self.config["FPS"])
