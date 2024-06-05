@@ -4,7 +4,5 @@
 movies/
 trash/
 frames/
-/data/one_body_example1.csv
-/data/one_body_example2.csv
-/data/one_body_example3.csv
-/data/one_body_example4.csv
+/old_configs
+/old_results

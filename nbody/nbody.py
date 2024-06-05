@@ -3,6 +3,9 @@ import numpy as np
 import argparse
 import yaml
 import pandas as pd
+from tqdm import tqdm
+
+CONFIG = yaml.safe_load(open("configs/global.yml"))
 
 
 def _calculate_forces(masses: np.ndarray,
@@ -177,7 +180,10 @@ def simulate(masses: list,
         yvels[0, j] = initial_yvels[j]
 
     # Integrate using the leapfrog method
-    for step in range(1, n_steps):
+    for step in tqdm(range(1, n_steps),
+                     desc="Integrating...",
+                     colour="#A241B2"):
+
         # Calculate the forces acting on the particles on previous step
         forces_then = _calculate_forces(masses=masses,
                                         xposs=xposs[step - 1],
@@ -193,12 +199,14 @@ def simulate(masses: list,
             yposs[step, k] = yposs[step - 1, k] \
                 + yvels[step - 1, k] * timestep \
                 + 0.5 * acc_then[1] * timestep**2
+
         # Recalculate the force in the current step
         forces_now = _calculate_forces(masses=masses,
                                        xposs=xposs[step],
                                        yposs=yposs[step],
                                        grav_const=grav_const,
                                        softening=softening)
+
         # Update the velocities
         for k in range(n_bodies):
             acc_then = forces_then[k].sum(axis=0) / masses[k]
@@ -207,6 +215,7 @@ def simulate(masses: list,
                 + 0.5 * (acc_then[0] + acc_now[0]) * timestep
             yvels[step, k] = yvels[step - 1, k] \
                 + 0.5 * (acc_then[1] + acc_now[1]) * timestep
+
         # Update the time
         time[step] = time[step - 1] + timestep
 
@@ -235,7 +244,16 @@ def simulate(masses: list,
     df["Potential"] = potentials
     df["Energy"] = df["KineticEnergy"] + df["Potential"]
 
-    df.to_csv(f"data/{filename}.csv")
+    df = df.round(decimals=CONFIG["DATAFRAME_DECIMALS"])
+
+    # Sample data frame to a given FPS
+    n_rows = int(CONFIG["FPS"] * df["Time"].to_numpy()[-1])
+    idx = (np.linspace(
+        0, 1, n_rows, endpoint=False) * len(df)).astype(np.int64)
+    df = df.iloc[idx]
+    df.reset_index(inplace=True, drop=True)
+
+    df.to_csv(f"results/simulation_{filename}.csv")
 
     return df
 
@@ -243,27 +261,32 @@ def simulate(masses: list,
 def main():
     # Get IC file name
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config",
-                        type=str,
-                        required=True,
-                        help="The IC file.")
+    parser.add_argument(
+        "--physics", type=str, required=True,
+        help="The physics configuration file.")
+    parser.add_argument(
+        "--ic", type=str, required=True,
+        help="The initial condition file.")
+    parser.add_argument(
+        "--filename", type=str, required=True,
+        help="The name for the output file.")
     args = parser.parse_args()
 
     # Read configuration file
-    config = yaml.safe_load(
-        open(f"configs/{args.config}.yml"))
+    PHYSICS = yaml.safe_load(open(f"configs/physics_{args.physics}.yml"))
+    IC = pd.read_csv(f"ics/ic_{args.ic}.csv")
 
     # Run simulation
-    simulate(masses=config["masses"],
-             initial_xposs=config["xpositions"],
-             initial_yposs=config["ypositions"],
-             initial_xvels=config["xvelocities"],
-             initial_yvels=config["yvelocities"],
-             grav_const=config["grav_const"],
-             softening=config["softening_length"],
-             timestep=config["timestep"],
-             n_steps=config["n_steps"],
-             filename=config["filename"])
+    simulate(masses=IC["Mass_kg"].to_list(),
+             initial_xposs=IC["xPosition_m"].to_list(),
+             initial_yposs=IC["yPosition_m"].to_list(),
+             initial_xvels=IC["xVelocity_m/s"].to_list(),
+             initial_yvels=IC["yVelocity_m/s"].to_list(),
+             grav_const=PHYSICS["GRAV_CONST"],
+             softening=PHYSICS["SOFTENING_LENGTH"],
+             timestep=PHYSICS["TIMESETP"],
+             n_steps=PHYSICS["N_STEPS"],
+             filename=args.filename)
 
 
 if __name__ == "__main__":

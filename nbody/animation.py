@@ -6,42 +6,38 @@ import argparse
 import numpy as np
 import utils
 
+PARTICLE_COLORS = [
+    "#FA4656", "#2C73D6", "#00D75B", "#FEF058", "#FFAA4C", "#A241B2"]
+
 
 class Animation:
-    def __init__(self, config: dict) -> None:
+    def __init__(self, df: pd.DataFrame) -> None:
         """
         The constructor for the Animation class.
 
         Parameters
         ----------
-        config : dict
-            A dictionary with the configuration parameters.
+        df : pd.DataFrame
+            The data to animate.
         """
         pygame.init()
-        self.running = True
-
-        self.config = config
-
-        # Screen size
-        self.width = self.config["width"]
-        self.height = self.config["height"]
+        self.running = False
+        self.config = yaml.safe_load(open("configs/global.yml"))
+        self.data = df
+        self.width = self.config["SCREEN_WIDTH"]
+        self.height = self.config["SCREEN_HEIGHT"]
+        self.n_bodies = utils.get_particle_count_from_df(self.data)
+        self.initial_energy = self.data['Energy'].iloc[0]
+        self.idx = 0  # Current simulation snapshot
 
         # Setup window
         self.screen = pygame.display.set_mode(
-            size=(self.width, self.height),
-            flags=pygame.FULLSCREEN,
-            depth=32)
-        pygame.display.set_caption(self.config["window_name"])
+            size=(self.width, self.height), flags=pygame.FULLSCREEN, depth=32)
+        pygame.display.set_caption(self.config["WINDOW_NAME"])
 
-        # Start clock
         self.clock = pygame.time.Clock()
 
-        # Define number of particles
-        self.n_bodies = len(config["masses"])
-
         # Read data and transform coordinates
-        self.data = pd.read_csv(
-            f"data/{config['filename']}.csv")
         for i in range(self.n_bodies):
             self.data[f"xPosition{i}"], self.data[f"yPosition{i}"] = \
                 self._transform_coordinates(
@@ -54,10 +50,8 @@ class Animation:
         self.factor = self.height / max_energy / 4
 
         # Setup fonts
-        self.font = pygame.font.SysFont("arial", 30)
-
-        # Directory for frames for movie
-        self.frames_dir = "frames/"
+        font = self.config["FONT"]
+        self.font = pygame.font.Font(f"fonts/{font}.ttf", 30)
 
     @staticmethod
     def _quit() -> None:
@@ -82,6 +76,10 @@ class Animation:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
                 self.running = not self.running
 
+            # Reset simulation
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                self._reset_animation()
+
     def _transform_coordinates(self,
                                x: np.ndarray,
                                y: np.ndarray,
@@ -104,24 +102,30 @@ class Animation:
         y_pyg : np.ndarray
             The coordinates in the animation y-axis.
         """
-        movie_xrange = np.diff(self.config["scene_xlim"])
-        movie_yrange = np.diff(self.config["scene_ylim"])
+        movie_xrange = np.diff(
+            [self.config["SCENE_XMIN"], self.config["SCENE_XMAX"]])
+        movie_yrange = np.diff(
+            [self.config["SCENE_YMIN"], self.config["SCENE_YMAX"]])
         x_pyg = self.width / movie_xrange * x + self.width / 2
         y_pyg = - self.height / movie_yrange * y + self.height / 2
         return x_pyg, y_pyg
+
+    def _reset_animation(self) -> None:
+        self.idx = 0
+        self.running = False
 
     def _draw_indicator_lines(self) -> None:
         """
         Draw lines to guide the eye.
         """
-        pygame.draw.aaline(
+        pygame.draw.line(
             surface=self.screen,
-            color=self.config["ind_color"],
+            color=self.config["INDICATORS_COLOR"],
             start_pos=(0, self.height / 2),
             end_pos=(self.width, self.height / 2))
-        pygame.draw.aaline(
+        pygame.draw.line(
             surface=self.screen,
-            color=self.config["ind_color"],
+            color=self.config["INDICATORS_COLOR"],
             start_pos=(self.width / 2, 0),
             end_pos=(self.width / 2, self.height))
 
@@ -135,11 +139,11 @@ class Animation:
             The index of the data frame to plot.
         """
         # Define geometrical quantities
-        bar_width = self.config["bar_width_frac"] * self.width
-        bar_sep = self.config["bar_sep_frac"] * self.width
+        bar_width = self.config["BAR_WIDTH_FRAC"] * self.width
+        bar_sep = self.config["BAR_SEP_FRAC"] * self.width
 
         # Draw energy bars
-        x0 = self.config["text_start_frac"] * self.width
+        x0 = self.config["TEXT_START_FRAC"] * self.width
         for energy in ["Energy", "Potential", "KineticEnergy"]:
             y0 = self.height / 2 \
                 - abs(self.data[energy].iloc[idx]) * self.factor
@@ -148,7 +152,7 @@ class Animation:
                 y0 += abs(self.data[energy].iloc[idx]) * self.factor
             pygame.draw.rect(
                 self.screen,
-                self.config["ind_color"],
+                self.config["INDICATORS_COLOR"],
                 pygame.Rect(
                     x0,
                     y0,
@@ -158,13 +162,13 @@ class Animation:
             x0 += bar_sep
 
         # Draw energy labels
-        x0 = self.config["text_start_frac"] * self.width
-        dy = self.config["text_offset"] * self.height
+        x0 = self.config["TEXT_START_FRAC"] * self.width
+        dy = self.config["TEXT_OFFSET"] * self.height
         letters = ["E", "U", "K"]
         for i, energy in enumerate(["Energy", "Potential", "KineticEnergy"]):
             text = self.font.render(letters[i],
                                     True,
-                                    self.config["ind_color"])
+                                    self.config["INDICATORS_COLOR"])
             if self.data[energy].iloc[idx] >= 0:
                 self.screen.blit(
                     text,
@@ -187,12 +191,12 @@ class Animation:
             The index of the data frame to plot.
         """
         for i in range(self.n_bodies):
-            if self.n_bodies <= len(self.config["part_colors"]):
-                color = self.config["part_colors"][i]
+            if self.n_bodies <= len(PARTICLE_COLORS):
+                color = PARTICLE_COLORS[i]
             else:
-                color = self.config["part_colors"][0]
-            if idx >= 1 \
-                    and self.n_bodies <= len(self.config["part_colors"]):
+                color = PARTICLE_COLORS[0]
+            if idx >= 5 \
+                    and self.n_bodies <= len(PARTICLE_COLORS):
                 # Trace of the particle
                 pygame.draw.aalines(
                     surface=self.screen,
@@ -219,21 +223,26 @@ class Animation:
         idx : int
             The index of the data frame to plot.
         """
-        x0 = self.config["text_start_frac"] * self.width
+        x0 = self.config["TEXT_START_FRAC"] * self.width
         text = self.font.render(
             f"Energy: {self.data['Energy'].iloc[idx]:.2f} J",
-            True,
-            self.config["ind_color"])
+            True, self.config["INDICATORS_COLOR"])
+        self.screen.blit(
+            text,
+            text.get_rect(bottomleft=(x0, self.height - 3 * x0)))
+        delta_energy = self.data['Energy'].iloc[idx] - self.initial_energy
+        text = self.font.render(
+            f"Energy Variation: {(delta_energy):.2f} J",
+            True, self.config["INDICATORS_COLOR"])
         self.screen.blit(
             text,
             text.get_rect(bottomleft=(x0, self.height - 2 * x0)))
         text = self.font.render(
             f"Time: {self.data['Time'].iloc[idx]:.1f} s",
-            True,
-            self.config["ind_color"])
+            True, self.config["INDICATORS_COLOR"])
         self.screen.blit(
             text,
-            text.get_rect(bottomleft=(x0, self.height - x0)))
+            text.get_rect(bottomleft=(x0, self.height - 1 * x0)))
 
     def _draw_elements(self, idx: int) -> None:
         """
@@ -250,79 +259,46 @@ class Animation:
         self._draw_energy_and_time_values(idx=idx)
         self._draw_particles(idx=idx)
 
-    def _create_frames_dir(self):
-        """
-        This method creates a directory to store the frames for the movie.
-        """
-        if self.config["save_frames"]:
-            utils.create_dir(path=f"{self.frames_dir}")
-
-    def _save_screen_as_img(self, frame_idx: int):
-        """
-        This method saves the current screen as an image with index
-        `frame_idx`.
-
-        Parameters
-        ----------
-        frame_idx : int
-            The index of this frame.
-        """
-        pygame.image.save(self.screen,
-                          f"{self.frames_dir}frame{frame_idx}.png")
-
     def run(self) -> None:
         """
         Run the main animation loop.
         """
 
-        # Create folder for frames if necessary
-        self._create_frames_dir()
-
-        idx = 0
         while True:  # Main game loop
             self._check_events()
-            if idx >= len(self.data):
-                # Quit the animation if simulation reaches the end
-                self._quit()
-            self.screen.fill(self.config["bg_color"])
-            self._draw_elements(idx=idx)
-            self.clock.tick(self.config["fps"])
+            if self.idx >= len(self.data):
+                self._reset_animation()
+                
+            self.screen.fill(self.config["BACKGROUND_COLOR"])
+            self._draw_elements(idx=self.idx)
+            self.clock.tick(self.config["FPS"])
 
             if self.running:
-                # Create frames if `save_frames` is True
-                if self.config["save_frames"]:
-                    self._save_screen_as_img(
-                        frame_idx=int(idx // self.config["one_every"]))
-
-                # Advance to the next frame
-                idx += self.config["one_every"]
+                self.idx += 1
             else:
                 text = self.font.render(
-                    "Paused",
-                    True,
-                    self.config["ind_color"])
+                    "Paused", True, self.config["INDICATORS_COLOR"])
                 self.screen.blit(
                     text,
                     text.get_rect(topright=(self.width - 0.05 * self.height,
                                             0.05 * self.height)))
+
             pygame.display.flip()
 
 
 def main():
     # Get simulation name
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config",
-                        type=str,
-                        required=True,
-                        help="The simulation to animate.")
+    parser.add_argument(
+        "--result", type=str, required=True,
+        help="The simulation to animate.")
     args = parser.parse_args()
 
     # Load configuration file
-    config = yaml.safe_load(
-        open(f"configs/{args.config}.yml"))
+    df = pd.read_csv(f"results/simulation_{args.result}.csv")
 
     # Run the PyGame animation
-    animation = Animation(config=config)
+    animation = Animation(df=df)
     animation.run()
 
 

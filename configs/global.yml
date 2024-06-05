@@ -1,0 +1,20 @@
+DATAFRAME_DECIMALS:       8
+FPS:                      50
+ONE_EVERY:                20
+SAVE_FRAMES:              0
+SCENE_XMIN:               -16.0
+SCENE_XMAX:               16.0
+SCENE_YMIN:               -9.0
+SCENE_YMAX:               9.0
+SCREEN_WIDTH:             1920
+SCREEN_HEIGHT:            1080
+WINDOW_NAME:              "The N-Body Problem"
+TEXT_START_FRAC:          0.02
+BAR_WIDTH_FRAC:           0.02
+BAR_SEP_FRAC:             0.03
+TEXT_OFFSET:              0.009
+INDICATORS_COLOR:         "#D3D3D3"
+BACKGROUND_COLOR:         "#010001"
+FONT:                     "Roboto-Bold"
+TEXT_MAX_ALPHA:           255
+ALPHA_DECAY_PER_FRAME:    5    

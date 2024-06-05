@@ -1,0 +1,4 @@
+TIMESETP:           0.01  # s
+N_STEPS:            6000
+SOFTENING_LENGTH:   0.0  # m
+GRAV_CONST:         10.0  # m^3 / kg / s^2  
