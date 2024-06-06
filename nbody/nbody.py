@@ -122,6 +122,7 @@ def simulate(masses: list,
              initial_yposs: list,
              initial_xvels: list,
              initial_yvels: list,
+             particle_types: list,
              grav_const: float,
              softening: float,
              timestep: float,
@@ -143,6 +144,8 @@ def simulate(masses: list,
         A list with the initial velocities of the particles in the x-axis.
     initial_yvels : list
         A list with the initial velocities of the particles in the y-axis.
+    particle_types : list
+        A list with `0` for the static particles and `1` for the dynamic ones.
     grav_const : float
         The gravitational constant in m^3 / kg / s^2.
     softening : float
@@ -166,6 +169,12 @@ def simulate(masses: list,
 
     n_bodies = len(masses)
 
+    # Make any velocity of a static particle
+    for i in range(n_bodies):
+        if particle_types[i] == 0:
+            initial_xvels[i] = 0.0
+            initial_xvels[i] = 0.0
+
     time = np.zeros(n_steps)
 
     xposs = np.zeros((n_steps, n_bodies))
@@ -182,7 +191,8 @@ def simulate(masses: list,
     # Integrate using the leapfrog method
     for step in tqdm(range(1, n_steps),
                      desc="Integrating...",
-                     colour="#A241B2"):
+                     colour="#A241B2",
+                     ncols=100):
 
         # Calculate the forces acting on the particles on previous step
         forces_then = _calculate_forces(masses=masses,
@@ -192,13 +202,14 @@ def simulate(masses: list,
                                         softening=softening)
         # Update the positions
         for k in range(n_bodies):
-            acc_then = forces_then[k].sum(axis=0) / masses[k]
-            xposs[step, k] = xposs[step - 1, k] \
-                + xvels[step - 1, k] * timestep \
-                + 0.5 * acc_then[0] * timestep**2
-            yposs[step, k] = yposs[step - 1, k] \
-                + yvels[step - 1, k] * timestep \
-                + 0.5 * acc_then[1] * timestep**2
+            if particle_types[k] == 1:
+                acc_then = forces_then[k].sum(axis=0) / masses[k]
+                xposs[step, k] = xposs[step - 1, k] \
+                    + xvels[step - 1, k] * timestep \
+                    + 0.5 * acc_then[0] * timestep**2
+                yposs[step, k] = yposs[step - 1, k] \
+                    + yvels[step - 1, k] * timestep \
+                    + 0.5 * acc_then[1] * timestep**2
 
         # Recalculate the force in the current step
         forces_now = _calculate_forces(masses=masses,
@@ -209,12 +220,13 @@ def simulate(masses: list,
 
         # Update the velocities
         for k in range(n_bodies):
-            acc_then = forces_then[k].sum(axis=0) / masses[k]
-            acc_now = forces_now[k].sum(axis=0) / masses[k]
-            xvels[step, k] = xvels[step - 1, k] \
-                + 0.5 * (acc_then[0] + acc_now[0]) * timestep
-            yvels[step, k] = yvels[step - 1, k] \
-                + 0.5 * (acc_then[1] + acc_now[1]) * timestep
+            if particle_types[k] == 1:
+                acc_then = forces_then[k].sum(axis=0) / masses[k]
+                acc_now = forces_now[k].sum(axis=0) / masses[k]
+                xvels[step, k] = xvels[step - 1, k] \
+                    + 0.5 * (acc_then[0] + acc_now[0]) * timestep
+                yvels[step, k] = yvels[step - 1, k] \
+                    + 0.5 * (acc_then[1] + acc_now[1]) * timestep
 
         # Update the time
         time[step] = time[step - 1] + timestep
@@ -253,7 +265,7 @@ def simulate(masses: list,
     df = df.iloc[idx]
     df.reset_index(inplace=True, drop=True)
 
-    df.to_csv(f"results/simulation_{filename}.csv")
+    df.to_csv(f"results/{filename}.csv")
 
     return df
 
@@ -267,9 +279,6 @@ def main():
     parser.add_argument(
         "--ic", type=str, required=True,
         help="The initial condition file.")
-    parser.add_argument(
-        "--filename", type=str, required=True,
-        help="The name for the output file.")
     args = parser.parse_args()
 
     # Read configuration file
@@ -282,11 +291,12 @@ def main():
              initial_yposs=IC["yPosition_m"].to_list(),
              initial_xvels=IC["xVelocity_m/s"].to_list(),
              initial_yvels=IC["yVelocity_m/s"].to_list(),
+             particle_types=IC["DynamicParticle"].to_list(),
              grav_const=PHYSICS["GRAV_CONST"],
              softening=PHYSICS["SOFTENING_LENGTH"],
              timestep=PHYSICS["TIMESETP"],
              n_steps=PHYSICS["N_STEPS"],
-             filename=args.filename)
+             filename=f"simulation_p{args.physics}_ic{args.ic}")
 
 
 if __name__ == "__main__":

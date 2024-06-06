@@ -295,7 +295,7 @@ def main():
     args = parser.parse_args()
 
     # Load configuration file
-    df = pd.read_csv(f"results/simulation_{args.result}.csv")
+    df = pd.read_csv(f"results/{args.result}.csv")
 
     # Run the PyGame animation
     animation = Animation(df=df)
