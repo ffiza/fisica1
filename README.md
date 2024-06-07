@@ -6,7 +6,7 @@ Los archivos de configuración relacionados con la física (paso temporal para l
 
 Algunas animaciones pueden encontrarse en [YouTube](https://www.youtube.com/fgiza/videos).
 
-Para generar los resultados de una simulación dada (por ejemplo, `simulation_p01_ic01`) utilizando PyGame, correr:
+Para animar los resultados de una simulación dada (por ejemplo, `simulation_p01_ic01`) utilizando PyGame, correr:
 
 ```
 python nbody/animation.py --result simulation_p01_ic01
