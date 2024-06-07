@@ -1,4 +1,4 @@
-TIMESETP:           0.001  # s
-N_STEPS:            60000
+TIMESETP:           0.0001  # s
+N_STEPS:            300000
 SOFTENING_LENGTH:   0.0  # m
 GRAV_CONST:         10.0  # m^3 / kg / s^2  
