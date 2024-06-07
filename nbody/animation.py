@@ -212,7 +212,7 @@ class Animation:
                 color,
                 (self.data[f"xPosition{i}"].iloc[idx],
                  self.data[f"yPosition{i}"].iloc[idx]),
-                7)
+                10)
 
     def _draw_energy_and_time_values(self, idx: int) -> None:
         """
