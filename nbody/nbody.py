@@ -74,14 +74,16 @@ def _calculate_gravitational_potential(masses: np.ndarray,
     potential : float
         The total gravitational potential energy.
     """
-    n_bodies = len(masses)
 
-    potential = 0.0
-    for i in range(n_bodies):
-        for j in range(i + 1, n_bodies):
-            dr = np.array([xposs[i] - xposs[j], yposs[i] - yposs[j]])
-            potential += - grav_const * masses[i] * masses[j] \
-                / np.linalg.norm(dr)
+    pos = np.vstack((xposs, yposs)).T  # Particle positions as an array
+    diff = pos[:, np.newaxis, :] - pos[np.newaxis, :, :]
+    dist = np.sqrt(np.sum(diff**2, axis=-1))
+    np.fill_diagonal(dist, np.inf)  # Avoid division by zero
+    potential = - grav_const \
+        * (masses[:, np.newaxis] * masses[np.newaxis, :]) / dist
+
+    # Keep only one diagonal of matrix and sum over all particles
+    potential = np.sum(np.triu(potential, k=1))
     return potential
 
 
