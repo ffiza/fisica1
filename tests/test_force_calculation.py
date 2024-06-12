@@ -5,7 +5,7 @@ from nbody.nbody import _calculate_forces
 
 class TestForceCalculation(unittest.TestCase):
     """
-    Some tests for the `_calculate_forces` function defined in `utils.py`.
+    Some tests for the `_calculate_forces` function defined in `nbody.py`.
     """
 
     def test_1d(self):

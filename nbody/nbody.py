@@ -1,4 +1,3 @@
-import itertools
 import numpy as np
 import argparse
 import yaml
@@ -38,21 +37,14 @@ def _calculate_forces(masses: np.ndarray,
     forces : np.ndarray
         A 2D array with the forces of the particles.
     """
-    n_bodies = len(masses)
+    pos = np.vstack((xposs, yposs)).T  # Particle positions as an array
+    diff = pos[:, np.newaxis, :] - pos[np.newaxis, :, :]
+    dist = np.sqrt(np.sum(diff**2, axis=-1))
+    np.fill_diagonal(dist, np.inf)  # Avoid division by zero
 
-    # Calculate the difference of position vectors
-    dr = np.zeros((n_bodies, n_bodies, 2), dtype=np.float64)
-    for i, j in itertools.product(range(n_bodies), range(n_bodies)):
-        dr[i, j] = np.array([xposs[i] - xposs[j], yposs[i] - yposs[j]])
-
-    # Calculate the force matrix
-    forces = np.zeros((n_bodies, n_bodies, 2), dtype=np.float64)
-    for i, j in itertools.product(range(n_bodies), range(n_bodies)):
-        if j > i:
-            forces[i, j] = - grav_const * masses[i] \
-                * masses[j] * dr[i, j] / \
-                (np.linalg.norm(dr[i, j])**2 + softening**2)**(3 / 2)
-            forces[j, i] = - forces[i, j]
+    forces_mag = grav_const * (masses[:, np.newaxis] * masses[np.newaxis, :]) \
+        / (dist**2 + softening**2)
+    forces = - forces_mag[:, :, np.newaxis] * (diff / dist[:, :, np.newaxis])
 
     return np.sum(forces, axis=1)
 
@@ -195,7 +187,7 @@ def simulate(masses: list,
                      ncols=100):
 
         # Calculate the forces acting on the particles on previous step
-        forces_then = _calculate_forces(masses=masses,
+        forces_then = _calculate_forces(masses=np.array(masses),
                                         xposs=xposs[step - 1],
                                         yposs=yposs[step - 1],
                                         grav_const=grav_const,
@@ -212,7 +204,7 @@ def simulate(masses: list,
                     + 0.5 * acc_then[1] * timestep**2
 
         # Recalculate the force in the current step
-        forces_now = _calculate_forces(masses=masses,
+        forces_now = _calculate_forces(masses=np.array(masses),
                                        xposs=xposs[step],
                                        yposs=yposs[step],
                                        grav_const=grav_const,
