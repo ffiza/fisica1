@@ -111,6 +111,80 @@ def _calculate_kinetic_energy(masses: np.ndarray,
     return 0.5 * np.sum(masses * (xvels**2 + yvels**2))
 
 
+def _calculate_leapfrog_step(masses: np.ndarray,
+                             xposs: np.ndarray,
+                             yposs: np.ndarray,
+                             xvels: np.ndarray,
+                             yvels: np.ndarray,
+                             particle_types: np.ndarray,
+                             grav_const: float,
+                             softening: float,
+                             timestep: float) -> tuple:
+    """
+    Calculates one step in the simulation using the leapfrog method.
+
+    Parameters
+    ----------
+    masses : np.ndarray
+        A NumPy array with the masses of the particles to be simulated.
+    xposs : np.ndarray
+        A NumPy array with the initial positions of the particles
+        in the x-axis.
+    yposs : np.ndarray
+        A NumPy array with the initial positions of the particles
+        in the y-axis.
+    xvels : np.ndarray
+        A NumPy array with the initial velocities of the particles
+        in the x-axis.
+    yvels : np.ndarray
+        A NumPy array with the initial velocities of the particles
+        in the y-axis.
+    particle_types : np.ndarray
+        A NumPy array with `0` for the static particles and `1` for
+        the dynamic ones.
+    grav_const : float
+        The gravitational constant in m^3 / kg / s^2.
+    softening : float
+        The softening length to use in the force calculation in m.
+    timestep : float
+        The timestep of the simulation.
+    n_steps : int
+        The number of steps to simulate.
+
+    Returns
+    -------
+    tuple
+        A tuple with the new positions in the x-axis, the new positions in
+        the y-axis, the new velocities in the x-axis and the new velocities
+        in the y-axis.
+    """
+    # Calculate the forces acting on the particles on previous step
+    forces_then = _calculate_forces(
+        masses=masses, xposs=xposs, yposs=yposs,
+        grav_const=grav_const, softening=softening)
+    # Null forces for static particles
+    forces_then[particle_types == 0] = np.zeros(2)
+
+    # Update the positions
+    acc_then = forces_then / masses[:, np.newaxis]
+    new_xposs = xposs + xvels * timestep + 0.5 * acc_then[:, 0] * timestep**2
+    new_yposs = yposs + yvels * timestep + 0.5 * acc_then[:, 1] * timestep**2
+
+    # Recalculate the force in the current step
+    forces_now = _calculate_forces(
+        masses=masses, xposs=new_xposs, yposs=new_yposs,
+        grav_const=grav_const, softening=softening)
+    # Null forces for static particles
+    forces_now[particle_types == 0] = np.zeros(2)
+
+    # Update the velocities
+    acc_now = forces_now / masses[:, np.newaxis]
+    new_xvels = xvels + 0.5 * (acc_then[:, 0] + acc_now[:, 0]) * timestep
+    new_yvels = yvels + 0.5 * (acc_then[:, 1] + acc_now[:, 1]) * timestep
+
+    return new_xposs, new_yposs, new_xvels, new_yvels
+
+
 def simulate(masses: list,
              initial_xposs: list,
              initial_yposs: list,
@@ -188,41 +262,18 @@ def simulate(masses: list,
                      colour="#A241B2",
                      ncols=100):
 
-        # Calculate the forces acting on the particles on previous step
-        forces_then = _calculate_forces(masses=np.array(masses),
-                                        xposs=xposs[step - 1],
-                                        yposs=yposs[step - 1],
-                                        grav_const=grav_const,
-                                        softening=softening)
-        # Update the positions
-        for k in range(n_bodies):
-            if particle_types[k] == 1:
-                acc_then = forces_then[k] / masses[k]
-                xposs[step, k] = xposs[step - 1, k] \
-                    + xvels[step - 1, k] * timestep \
-                    + 0.5 * acc_then[0] * timestep**2
-                yposs[step, k] = yposs[step - 1, k] \
-                    + yvels[step - 1, k] * timestep \
-                    + 0.5 * acc_then[1] * timestep**2
+        new_xposs, new_yposs, new_xvels, new_yvels = \
+            _calculate_leapfrog_step(
+                masses,
+                xposs[step - 1], yposs[step - 1],
+                xvels[step - 1], yvels[step - 1],
+                particle_types, grav_const, softening, timestep)
 
-        # Recalculate the force in the current step
-        forces_now = _calculate_forces(masses=np.array(masses),
-                                       xposs=xposs[step],
-                                       yposs=yposs[step],
-                                       grav_const=grav_const,
-                                       softening=softening)
-
-        # Update the velocities
-        for k in range(n_bodies):
-            if particle_types[k] == 1:
-                acc_then = forces_then[k] / masses[k]
-                acc_now = forces_now[k] / masses[k]
-                xvels[step, k] = xvels[step - 1, k] \
-                    + 0.5 * (acc_then[0] + acc_now[0]) * timestep
-                yvels[step, k] = yvels[step - 1, k] \
-                    + 0.5 * (acc_then[1] + acc_now[1]) * timestep
-
-        # Update the time
+        # Update quantities
+        xposs[step] = new_xposs
+        yposs[step] = new_yposs
+        xvels[step] = new_xvels
+        yvels[step] = new_yvels
         time[step] = time[step - 1] + timestep
 
     df = pd.DataFrame()
