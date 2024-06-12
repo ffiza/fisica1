@@ -55,8 +55,7 @@ def _calculate_gravitational_potential(masses: np.ndarray,
                                        grav_const: float
                                        ) -> float:
     """
-    Calculate a the total gravitational potential of the system at the
-    given state.
+    Calculate a the total gravitational potential of the system.
 
     Parameters
     ----------
@@ -75,15 +74,16 @@ def _calculate_gravitational_potential(masses: np.ndarray,
         The total gravitational potential energy.
     """
 
-    pos = np.vstack((xposs, yposs)).T  # Particle positions as an array
-    diff = pos[:, np.newaxis, :] - pos[np.newaxis, :, :]
-    dist = np.sqrt(np.sum(diff**2, axis=-1))
-    np.fill_diagonal(dist, np.inf)  # Avoid division by zero
-    potential = - grav_const \
-        * (masses[:, np.newaxis] * masses[np.newaxis, :]) / dist
+    n_steps, n_particles = xposs.shape
+    potential = np.zeros(n_steps)
 
-    # Keep only one diagonal of matrix and sum over all particles
-    potential = np.sum(np.triu(potential, k=1))
+    for i in range(n_particles):
+        for j in range(i + 1, n_particles):
+            dx = xposs[:, j] - xposs[:, i]
+            dy = yposs[:, j] - yposs[:, i]
+            r = np.sqrt(dx**2 + dy**2)
+            potential -= grav_const * masses[i] * masses[j] / r
+
     return potential
 
 
@@ -97,18 +97,23 @@ def _calculate_kinetic_energy(masses: np.ndarray,
     Parameters
     ----------
     masses : np.ndarray
-        The masses of the particles.
+        The masses of the particles. This array is of shape (n_particles,)
     xvels : np.ndarray
-        The x-velocities of the particles.
+        The x-velocities of the particles. This array is of shape (n_steps,
+        n_particles).
     yvels : np.ndarray
-        The y-velocities of the particles.
+        The y-velocities of the particles. This array is of shape (n_steps,
+        n_particles).
 
     Returns
     -------
     float
         The total kinetic energy.
     """
-    return 0.5 * np.sum(masses * (xvels**2 + yvels**2))
+    n_particles = masses.shape[0]
+    kinetic_energies = 0.5 * masses.reshape(1, n_particles) \
+        * (xvels**2 + yvels**2)
+    return np.sum(kinetic_energies, axis=1)
 
 
 def _calculate_leapfrog_step(masses: np.ndarray,
@@ -238,10 +243,8 @@ def simulate(masses: list,
     n_bodies = len(masses)
 
     # Make any velocity of a static particle
-    for i in range(n_bodies):
-        if particle_types[i] == 0:
-            initial_xvels[i] = 0.0
-            initial_xvels[i] = 0.0
+    initial_xvels[particle_types == 0] = 0.0
+    initial_yvels[particle_types == 0] = 0.0
 
     time = np.zeros(n_steps)
 
@@ -250,11 +253,10 @@ def simulate(masses: list,
     xvels = np.zeros((n_steps, n_bodies))
     yvels = np.zeros((n_steps, n_bodies))
 
-    for j in range(n_bodies):
-        xposs[0, j] = initial_xposs[j]
-        yposs[0, j] = initial_yposs[j]
-        xvels[0, j] = initial_xvels[j]
-        yvels[0, j] = initial_yvels[j]
+    xposs[0] = initial_xposs
+    yposs[0] = initial_yposs
+    xvels[0] = initial_xvels
+    yvels[0] = initial_yvels
 
     # Integrate using the leapfrog method
     for step in tqdm(range(1, n_steps),
@@ -276,6 +278,7 @@ def simulate(masses: list,
         yvels[step] = new_yvels
         time[step] = time[step - 1] + timestep
 
+    # Create data frame with the results
     df = pd.DataFrame()
     df['Time'] = time
     for k in range(n_bodies):
@@ -283,22 +286,10 @@ def simulate(masses: list,
         df[f"yPosition{k}"] = yposs[:, k]
         df[f"xVelocity{k}"] = xvels[:, k]
         df[f"yVelocity{k}"] = yvels[:, k]
-
-    # Calculate energies
-    kinetic_energies = np.zeros(len(df))
-    potentials = np.zeros(len(df))
-    for i in range(len(df)):
-        kinetic_energies[i] = _calculate_kinetic_energy(
-            masses=masses,
-            xvels=xvels[i],
-            yvels=yvels[i])
-        potentials[i] = _calculate_gravitational_potential(
-            masses=masses,
-            xposs=xposs[i],
-            yposs=yposs[i],
-            grav_const=grav_const)
-    df["KineticEnergy"] = kinetic_energies
-    df["Potential"] = potentials
+    df["KineticEnergy"] = _calculate_kinetic_energy(
+            masses=masses, xvels=xvels, yvels=yvels)
+    df["Potential"] = _calculate_gravitational_potential(
+        masses=masses, xposs=xposs, yposs=yposs, grav_const=grav_const)
     df["Energy"] = df["KineticEnergy"] + df["Potential"]
 
     df = df.round(decimals=CONFIG["DATAFRAME_DECIMALS"])
@@ -318,12 +309,10 @@ def simulate(masses: list,
 def main():
     # Get IC file name
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--physics", type=str, required=True,
-        help="The physics configuration file.")
-    parser.add_argument(
-        "--ic", type=str, required=True,
-        help="The initial condition file.")
+    parser.add_argument("--physics", type=str, required=True,
+                        help="The physics configuration file.")
+    parser.add_argument("--ic", type=str, required=True,
+                        help="The initial condition file.")
     args = parser.parse_args()
 
     # Read configuration file

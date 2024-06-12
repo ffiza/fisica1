@@ -9,23 +9,15 @@ class TestPotentialCalculation(unittest.TestCase):
     in `nbody.py`.
     """
 
-    def test_1d(self):
+    def test_2parts_2steps(self):
         masses = np.array([1, 1, 1])
-        xposs = np.array([-1, 0, 1])
-        yposs = np.array([0, 0, 0])
+        xposs = np.array([[-1, 0, 1], [-2, 0, 2]])
+        yposs = np.array([[0, 0, 0], [0, 0, 0]])
         grav_const = 1.0
         potential = _calculate_gravitational_potential(
             masses, xposs, yposs, grav_const)
-        np.testing.assert_allclose(potential, -2.5)
-
-    def test_2d(self):
-        masses = np.array([1, 1])
-        xposs = np.array([0, 1])
-        yposs = np.array([0, 1])
-        grav_const = 1.0
-        potential = _calculate_gravitational_potential(
-            masses, xposs, yposs, grav_const)
-        np.testing.assert_allclose(potential, - 1 / np.sqrt(2))
+        np.testing.assert_allclose(potential[0], -2.5)
+        np.testing.assert_allclose(potential[1], -1.25)
 
 
 if __name__ == '__main__':
