@@ -15,10 +15,10 @@ def _calculate_forces(masses: np.ndarray,
                       softening: float,
                       ) -> np.ndarray:
     """
-    Calculate a 3D array with the forces of a given particle. Element
-    `[i, j, 0]` of the array is the force acting on particle `i` due to
-    particle `j` in the x-axis. Element `[i, j, 1]` of the array is the force
-    acting on particle `i` due to particle `j` in the y-axis.
+    Calculate a 2D array with the forces of a given particle. Element
+    `[i, 0]` of the array is the force acting on particle `i` in the x-axis;
+    element `[i, 1]` of the array is the force acting on particle `i`
+    in the y-axis.
 
     Parameters
     ----------
@@ -36,7 +36,7 @@ def _calculate_forces(masses: np.ndarray,
     Returns
     -------
     forces : np.ndarray
-        A 3D array with the forces of the particles.
+        A 2D array with the forces of the particles.
     """
     n_bodies = len(masses)
 
@@ -54,7 +54,7 @@ def _calculate_forces(masses: np.ndarray,
                 (np.linalg.norm(dr[i, j])**2 + softening**2)**(3 / 2)
             forces[j, i] = - forces[i, j]
 
-    return forces
+    return np.sum(forces, axis=1)
 
 
 def _calculate_gravitational_potential(masses: np.ndarray,
@@ -203,7 +203,7 @@ def simulate(masses: list,
         # Update the positions
         for k in range(n_bodies):
             if particle_types[k] == 1:
-                acc_then = forces_then[k].sum(axis=0) / masses[k]
+                acc_then = forces_then[k] / masses[k]
                 xposs[step, k] = xposs[step - 1, k] \
                     + xvels[step - 1, k] * timestep \
                     + 0.5 * acc_then[0] * timestep**2
@@ -221,8 +221,8 @@ def simulate(masses: list,
         # Update the velocities
         for k in range(n_bodies):
             if particle_types[k] == 1:
-                acc_then = forces_then[k].sum(axis=0) / masses[k]
-                acc_now = forces_now[k].sum(axis=0) / masses[k]
+                acc_then = forces_then[k] / masses[k]
+                acc_now = forces_now[k] / masses[k]
                 xvels[step, k] = xvels[step - 1, k] \
                     + 0.5 * (acc_then[0] + acc_now[0]) * timestep
                 yvels[step, k] = yvels[step - 1, k] \
