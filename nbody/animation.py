@@ -4,7 +4,9 @@ import yaml
 import pandas as pd
 import argparse
 import numpy as np
+
 import utils
+from debugger import Debugger
 
 PARTICLE_COLORS = [
     "#FA4656", "#2C73D6", "#00D75B", "#FEF058", "#FFAA4C", "#A241B2"]
@@ -22,6 +24,8 @@ class Animation:
         """
         pygame.init()
         self.running = False
+        self.debugging = False
+        self.debugger = Debugger()
         self.config = yaml.safe_load(open("configs/global.yml"))
         self.data = df
         self.width = self.config["SCREEN_WIDTH"]
@@ -79,6 +83,10 @@ class Animation:
             # Reset simulation
             if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
                 self._reset_animation()
+
+            # Enable debugging
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_d:
+                self.debugging = not self.debugging
 
     def _transform_coordinates(self,
                                x: np.ndarray,
@@ -272,6 +280,21 @@ class Animation:
             self.screen.fill(self.config["BACKGROUND_COLOR"])
             self._draw_elements(idx=self.idx)
             self.clock.tick(self.config["FPS"])
+
+            if self.debugging:
+                self.debugger.render(
+                    [f"FPS: {round(self.clock.get_fps())}",
+                     f"DEBUGGING: {int(self.debugging)}",
+                     f"N_PARTICLES: {self.n_bodies}",
+                     f"CURRENT_SNAPSHOT_IDX: {self.idx}",
+                     f"MAX_SNAPSHOT_IDX: {len(self.data) - 1}",
+                     f"TIME: {self.data['Time'].iloc[self.idx]}",
+                     f"MAX_TIME: {self.data['Time'].iloc[-1]}",
+                     f"MEC_ENERGY: {self.data['Energy'].iloc[self.idx]}",
+                     f"POT_ENERGY: {self.data['Potential'].iloc[self.idx]}",
+                     f"KIN_ENERGY: {self.data['KineticEnergy'].iloc[self.idx]}"
+                     ],
+                    self.screen)
 
             if self.running:
                 self.idx += 1

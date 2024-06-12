@@ -17,4 +17,5 @@ INDICATORS_COLOR:         "#D3D3D3"
 BACKGROUND_COLOR:         "#010001"
 FONT:                     "Roboto-Bold"
 TEXT_MAX_ALPHA:           255
-ALPHA_DECAY_PER_FRAME:    5    
+ALPHA_DECAY_PER_FRAME:    5
+DEBUG_TEXT_SEP:           14
