@@ -280,12 +280,12 @@ def main():
     IC = pd.read_csv(f"ics/ic_{args.ic}.csv")
 
     # Run simulation
-    simulate(masses=IC["Mass_kg"].to_list(),
-             initial_xposs=IC["xPosition_m"].to_list(),
-             initial_yposs=IC["yPosition_m"].to_list(),
-             initial_xvels=IC["xVelocity_m/s"].to_list(),
-             initial_yvels=IC["yVelocity_m/s"].to_list(),
-             particle_types=IC["DynamicParticle"].to_list(),
+    simulate(masses=np.array(IC["Mass_kg"].to_list()),
+             initial_xposs=np.array(IC["xPosition_m"].to_list()),
+             initial_yposs=np.array(IC["yPosition_m"].to_list()),
+             initial_xvels=np.array(IC["xVelocity_m/s"].to_list()),
+             initial_yvels=np.array(IC["yVelocity_m/s"].to_list()),
+             particle_types=np.array(IC["DynamicParticle"].to_list()),
              grav_const=PHYSICS["GRAV_CONST"],
              softening=PHYSICS["SOFTENING_LENGTH"],
              timestep=PHYSICS["TIMESETP"],
