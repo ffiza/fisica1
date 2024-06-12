@@ -4,5 +4,6 @@
 movies/
 trash/
 frames/
-/old_configs
-/old_results
+old_configs/
+old_results/
+nbody.egg-info/
