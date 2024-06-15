@@ -6,7 +6,8 @@ import argparse
 import numpy as np
 
 import utils
-from debugger import Debugger
+from ui.debugger import Debugger
+from ui.indicator_bar import IndicatorBar
 
 PARTICLE_COLORS = [
     "#FA4656", "#2C73D6", "#00D75B", "#FEF058", "#FFAA4C", "#A241B2"]
@@ -24,19 +25,18 @@ class Animation:
         """
         pygame.init()
         self.running = False
-        self.debugging = False
+        self.debugging = True
         self.debugger = Debugger()
         self.config = yaml.safe_load(open("configs/global.yml"))
         self.data = df
-        self.width = self.config["SCREEN_WIDTH"]
-        self.height = self.config["SCREEN_HEIGHT"]
         self.n_bodies = utils.get_particle_count_from_df(self.data)
         self.initial_energy = self.data['Energy'].iloc[0]
         self.idx = 0  # Current simulation snapshot
 
         # Setup window
         self.screen = pygame.display.set_mode(
-            size=(self.width, self.height), flags=pygame.FULLSCREEN, depth=32)
+            size=(self.config["SCREEN_WIDTH"], self.config["SCREEN_HEIGHT"]),
+            flags=pygame.FULLSCREEN, depth=32)
         pygame.display.set_caption(self.config["WINDOW_NAME"])
 
         self.clock = pygame.time.Clock()
@@ -48,14 +48,38 @@ class Animation:
                     x=self.data[f"xPosition{i}"].to_numpy(),
                     y=self.data[f"yPosition{i}"].to_numpy())
 
-        # Define scaling factor for energy bars
-        energies = self.data[["Potential", "KineticEnergy", "Energy"]]
-        max_energy = np.max(np.abs(energies.to_numpy()))
-        self.factor = self.height / max_energy / 4
-
         # Setup fonts
         font = self.config["FONT"]
         self.font = pygame.font.Font(f"fonts/{font}.ttf", 30)
+
+        # Define geometry for energy bars
+        energies = self.data[["Potential", "KineticEnergy", "Energy"]]
+        self.min_energy = np.min(energies)
+        self.max_energy = np.max(energies)
+        self.max_energy_abs = np.max(np.abs(energies))
+        self.factor = self.config["SCREEN_HEIGHT"] / self.max_energy_abs / 4
+        bar_sep = self.config["BAR_SEP_FRAC"] * self.config["SCREEN_WIDTH"]
+        bar_left = self.config["TEXT_START_FRAC"] * self.config["SCREEN_WIDTH"]
+        bar_base_level = self.config["SCREEN_HEIGHT"] / 2
+        bar_width = self.config["BAR_WIDTH_FRAC"] * self.config["SCREEN_WIDTH"]
+        bar_height = self.config["SCREEN_HEIGHT"] / 4
+
+        # Setup energy bars
+        self.mechanical_energy_bar = IndicatorBar(
+            left=bar_left, base_level=bar_base_level,
+            width=bar_width, height=bar_height,
+            color=self.config["INDICATORS_COLOR"], label="E", font=self.font,
+            text_sep=self.config["TEXT_OFFSET"] * self.config["SCREEN_HEIGHT"])
+        self.potential_energy_bar = IndicatorBar(
+            left=bar_left + bar_sep, base_level=bar_base_level,
+            width=bar_width, height=bar_height,
+            color=self.config["INDICATORS_COLOR"], label="U", font=self.font,
+            text_sep=self.config["TEXT_OFFSET"] * self.config["SCREEN_HEIGHT"])
+        self.kinetic_energy_bar = IndicatorBar(
+            left=bar_left + 2 * bar_sep, base_level=bar_base_level,
+            width=bar_width, height=bar_height,
+            color=self.config["INDICATORS_COLOR"], label="K", font=self.font,
+            text_sep=self.config["TEXT_OFFSET"] * self.config["SCREEN_HEIGHT"])
 
     @staticmethod
     def _quit() -> None:
@@ -114,8 +138,10 @@ class Animation:
             [self.config["SCENE_XMIN"], self.config["SCENE_XMAX"]])
         movie_yrange = np.diff(
             [self.config["SCENE_YMIN"], self.config["SCENE_YMAX"]])
-        x_pyg = self.width / movie_xrange * x + self.width / 2
-        y_pyg = - self.height / movie_yrange * y + self.height / 2
+        x_pyg = self.config["SCREEN_WIDTH"] / movie_xrange * x \
+            + self.config["SCREEN_WIDTH"] / 2
+        y_pyg = - self.config["SCREEN_HEIGHT"] / movie_yrange * y \
+            + self.config["SCREEN_HEIGHT"] / 2
         return x_pyg, y_pyg
 
     def _reset_animation(self) -> None:
@@ -129,81 +155,45 @@ class Animation:
         pygame.draw.line(
             surface=self.screen,
             color=self.config["INDICATORS_COLOR"],
-            start_pos=(0, self.height / 2),
-            end_pos=(self.width, self.height / 2))
+            start_pos=(0, self.config["SCREEN_HEIGHT"] / 2),
+            end_pos=(self.config["SCREEN_WIDTH"],
+                     self.config["SCREEN_HEIGHT"] / 2))
         pygame.draw.line(
             surface=self.screen,
             color=self.config["INDICATORS_COLOR"],
-            start_pos=(self.width / 2, 0),
-            end_pos=(self.width / 2, self.height))
+            start_pos=(self.config["SCREEN_WIDTH"] / 2, 0),
+            end_pos=(self.config["SCREEN_WIDTH"] / 2,
+                     self.config["SCREEN_HEIGHT"]))
 
-    def _draw_energy_bars(self, idx: int) -> None:
+    def _update_energy_values(self) -> None:
+        """
+        Update the values of the energy bars to the current snapshot index.
+        """
+        self.mechanical_energy_bar.set_value(
+            self.data['Energy'].iloc[self.idx] / self.max_energy_abs)
+        self.potential_energy_bar.set_value(
+            self.data['Potential'].iloc[self.idx] / self.max_energy_abs)
+        self.kinetic_energy_bar.set_value(
+            self.data['KineticEnergy'].iloc[self.idx] / self.max_energy_abs)
+
+    def _draw_energy_bars(self) -> None:
         """
         Draw the energy bars of the system.
-
-        Parameters
-        ----------
-        idx : int
-            The index of the data frame to plot.
         """
-        # Define geometrical quantities
-        bar_width = self.config["BAR_WIDTH_FRAC"] * self.width
-        bar_sep = self.config["BAR_SEP_FRAC"] * self.width
+        self.mechanical_energy_bar.draw(self.screen)
+        self.potential_energy_bar.draw(self.screen)
+        self.kinetic_energy_bar.draw(self.screen)
 
-        # Draw energy bars
-        x0 = self.config["TEXT_START_FRAC"] * self.width
-        for energy in ["Energy", "Potential", "KineticEnergy"]:
-            y0 = self.height / 2 \
-                - abs(self.data[energy].iloc[idx]) * self.factor
-            bar_height = abs(self.data[energy].iloc[idx]) * self.factor
-            if self.data[energy].iloc[idx] < 0:
-                y0 += abs(self.data[energy].iloc[idx]) * self.factor
-            pygame.draw.rect(
-                self.screen,
-                self.config["INDICATORS_COLOR"],
-                pygame.Rect(
-                    x0,
-                    y0,
-                    bar_width,
-                    bar_height + 1))
-            # The +1 in the previous line fixes minor visualization issues
-            x0 += bar_sep
-
-        # Draw energy labels
-        x0 = self.config["TEXT_START_FRAC"] * self.width
-        dy = self.config["TEXT_OFFSET"] * self.height
-        letters = ["E", "U", "K"]
-        for i, energy in enumerate(["Energy", "Potential", "KineticEnergy"]):
-            text = self.font.render(letters[i],
-                                    True,
-                                    self.config["INDICATORS_COLOR"])
-            if self.data[energy].iloc[idx] >= 0:
-                self.screen.blit(
-                    text,
-                    text.get_rect(
-                        midtop=(x0 + bar_width / 2, self.height / 2 + dy)))
-            else:
-                self.screen.blit(
-                    text,
-                    text.get_rect(
-                        midbottom=(x0 + bar_width / 2, self.height / 2 - dy)))
-            x0 += bar_sep
-
-    def _draw_particles(self, idx: int) -> None:
+    def _draw_particles(self) -> None:
         """
-        Draw the particles.
-
-        Parameters
-        ----------
-        idx : int
-            The index of the data frame to plot.
+        Draw the particles in the current snapshot.
         """
         for i in range(self.n_bodies):
             if self.n_bodies <= len(PARTICLE_COLORS):
                 color = PARTICLE_COLORS[i]
             else:
                 color = PARTICLE_COLORS[0]
-            if idx >= 5 \
+            if self.idx >= 5 \
                     and self.n_bodies <= len(PARTICLE_COLORS):
                 # Trace of the particle
                 pygame.draw.aalines(
@@ -211,61 +201,46 @@ class Animation:
                     color=color,
                     closed=False,
                     points=np.vstack(
-                        (self.data[f"xPosition{i}"].iloc[:idx],
-                         self.data[f"yPosition{i}"].iloc[:idx])).T,
+                        (self.data[f"xPosition{i}"].iloc[:self.idx],
+                         self.data[f"yPosition{i}"].iloc[:self.idx])).T,
                 )
             # Particle as sphere
             pygame.draw.circle(
                 self.screen,
                 color,
-                (self.data[f"xPosition{i}"].iloc[idx],
-                 self.data[f"yPosition{i}"].iloc[idx]),
+                (self.data[f"xPosition{i}"].iloc[self.idx],
+                 self.data[f"yPosition{i}"].iloc[self.idx]),
                 10)
 
-    def _draw_energy_and_time_values(self, idx: int) -> None:
+    def _draw_energy_and_time_values(self) -> None:
         """
-        Draw the energy and time values.
-
-        Parameters
-        ----------
-        idx : int
-            The index of the data frame to plot.
+        Draw the energy and time values in the current snapshot.
         """
-        x0 = self.config["TEXT_START_FRAC"] * self.width
+        x0 = self.config["TEXT_START_FRAC"] * self.config["SCREEN_WIDTH"]
         text = self.font.render(
-            f"Energy: {self.data['Energy'].iloc[idx]:.2f} J",
+            f"Energy: {self.data['Energy'].iloc[self.idx]:.2f} J",
             True, self.config["INDICATORS_COLOR"])
         self.screen.blit(
             text,
-            text.get_rect(bottomleft=(x0, self.height - 3 * x0)))
-        delta_energy = self.data['Energy'].iloc[idx] - self.initial_energy
+            text.get_rect(
+                bottomleft=(x0, self.config["SCREEN_HEIGHT"] - 2 * x0)))
         text = self.font.render(
-            f"Energy Variation: {(delta_energy):.2f} J",
+            f"Time: {self.data['Time'].iloc[self.idx]:.1f} s",
             True, self.config["INDICATORS_COLOR"])
         self.screen.blit(
             text,
-            text.get_rect(bottomleft=(x0, self.height - 2 * x0)))
-        text = self.font.render(
-            f"Time: {self.data['Time'].iloc[idx]:.1f} s",
-            True, self.config["INDICATORS_COLOR"])
-        self.screen.blit(
-            text,
-            text.get_rect(bottomleft=(x0, self.height - 1 * x0)))
+            text.get_rect(
+                bottomleft=(x0, self.config["SCREEN_HEIGHT"] - 1 * x0)))
 
-    def _draw_elements(self, idx: int) -> None:
+    def _draw_elements(self) -> None:
         """
-        Draw the elements on the screen.
-
-        Parameters
-        ----------
-        idx : int
-            The index of the data frame to plot.
+        Draw the elements on the screen in the current snapshot.
         """
 
         self._draw_indicator_lines()
-        self._draw_energy_bars(idx=idx)
-        self._draw_energy_and_time_values(idx=idx)
-        self._draw_particles(idx=idx)
+        self._draw_energy_bars()
+        self._draw_energy_and_time_values()
+        self._draw_particles()
 
     def run(self) -> None:
         """
@@ -277,13 +252,16 @@ class Animation:
             if self.idx >= len(self.data):
                 self._reset_animation()
 
+            self._update_energy_values()
+
             self.screen.fill(self.config["BACKGROUND_COLOR"])
-            self._draw_elements(idx=self.idx)
+            self._draw_elements()
+
             self.clock.tick(self.config["FPS"])
 
             if self.debugging:
                 self.debugger.render(
-                    [f"FPS: {round(self.clock.get_fps())}",
+                    [f"FPS: {self.clock.get_fps()}",
                      f"DEBUGGING: {int(self.debugging)}",
                      f"N_PARTICLES: {self.n_bodies}",
                      f"CURRENT_SNAPSHOT_IDX: {self.idx}",
@@ -292,7 +270,10 @@ class Animation:
                      f"MAX_TIME: {self.data['Time'].iloc[-1]}",
                      f"MEC_ENERGY: {self.data['Energy'].iloc[self.idx]}",
                      f"POT_ENERGY: {self.data['Potential'].iloc[self.idx]}",
-                     f"KIN_ENERGY: {self.data['KineticEnergy'].iloc[self.idx]}"
+                     f"KIN_ENERGY: {self.data['KineticEnergy'].iloc[self.idx]}",
+                     f"MIN_ENERGY: {self.min_energy}",
+                     f"MAX_ENERGY: {self.max_energy}",
+                     f"MAX_ENERGY_ABS: {self.max_energy_abs}",
                      ],
                     self.screen)
 
@@ -303,8 +284,10 @@ class Animation:
                     "Paused", True, self.config["INDICATORS_COLOR"])
                 self.screen.blit(
                     text,
-                    text.get_rect(topright=(self.width - 0.05 * self.height,
-                                            0.05 * self.height)))
+                    text.get_rect(
+                        topright=(self.config["SCREEN_WIDTH"]
+                                  - 0.05 * self.config["SCREEN_HEIGHT"],
+                                  0.05 * self.config["SCREEN_HEIGHT"])))
 
             pygame.display.flip()
 
