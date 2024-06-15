@@ -30,6 +30,7 @@ class Animation:
         self.config = yaml.safe_load(open("configs/global.yml"))
         self.data = df
         self.n_bodies = utils.get_particle_count_from_df(self.data)
+        self.n_frames = len(self.data)
         self.initial_energy = self.data['Energy'].iloc[0]
         self.idx = 0  # Current simulation snapshot
 
@@ -111,6 +112,14 @@ class Animation:
             # Enable debugging
             if event.type == pygame.KEYDOWN and event.key == pygame.K_d:
                 self.debugging = not self.debugging
+
+            # Frame control by user
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
+                if self.idx <= self.n_frames - 2:
+                    self.idx += self.config["FRAME_SKIP"]
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
+                if self.idx >= 1:
+                    self.idx -= self.config["FRAME_SKIP"]
 
     def _transform_coordinates(self,
                                x: np.ndarray,

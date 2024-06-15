@@ -19,3 +19,4 @@ FONT:                     "Roboto-Bold"
 TEXT_MAX_ALPHA:           255
 ALPHA_DECAY_PER_FRAME:    5
 DEBUG_TEXT_SEP:           14
+FRAME_SKIP:               1
