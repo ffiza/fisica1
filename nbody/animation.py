@@ -24,11 +24,12 @@ class Animation:
         df : pd.DataFrame
             The data to animate.
         """
-        pygame.init()
-        self.running = False
-        self.debugging = True
-        self.debugger = Debugger()
         self.config = yaml.safe_load(open("configs/global.yml"))
+
+        pygame.init()
+        self.running = int(self.config["ANIMATION_STARTUP_RUN_STATE"])
+        self.debugging = int(self.config["ANIMATION_STARTUP_DEBUG_STATE"])
+        self.debugger = Debugger()
         self.data = df
         self.n_bodies = utils.get_particle_count_from_df(self.data)
         self.n_frames = len(self.data)
@@ -38,7 +39,7 @@ class Animation:
         # Setup window
         self.screen = pygame.display.set_mode(
             size=(self.config["SCREEN_WIDTH"], self.config["SCREEN_HEIGHT"]),
-            flags=pygame.FULLSCREEN, depth=32)
+            flags=pygame.FULLSCREEN, depth=self.config["COLOR_DEPTH"])
         pygame.display.set_caption(self.config["WINDOW_NAME"])
 
         self.clock = pygame.time.Clock()
@@ -52,7 +53,8 @@ class Animation:
 
         # Setup fonts
         font = self.config["FONT"]
-        self.font = pygame.font.Font(f"fonts/{font}.ttf", 30)
+        self.font = pygame.font.Font(f"fonts/{font}.ttf",
+                                     self.config["FONT_SIZE"])
 
         # Setup grid
         self.grid = Grid(
