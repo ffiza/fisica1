@@ -8,6 +8,7 @@ import numpy as np
 import utils
 from ui.debugger import Debugger
 from ui.indicator_bar import IndicatorBar
+from ui.grid import Grid
 
 PARTICLE_COLORS = [
     "#FA4656", "#2C73D6", "#00D75B", "#FEF058", "#FFAA4C", "#A241B2"]
@@ -52,6 +53,14 @@ class Animation:
         # Setup fonts
         font = self.config["FONT"]
         self.font = pygame.font.Font(f"fonts/{font}.ttf", 30)
+
+        # Setup grid
+        self.grid = Grid(
+            sep=self.config["GRID_SEPARATION_PX"],
+            xmin=0.0, xmax=self.config["SCREEN_WIDTH"],
+            ymin=0.0, ymax=self.config["SCREEN_HEIGHT"],
+            width=1, color=self.config["GRID_COLOR"],
+            major_lw_factor=self.config["GRID_MAJOR_LW_FACTOR"])
 
         # Define geometry for energy bars
         energies = self.data[["Potential", "KineticEnergy", "Energy"]]
@@ -247,6 +256,7 @@ class Animation:
         """
 
         self._draw_indicator_lines()
+        self.grid.draw(self.screen)
         self._draw_energy_bars()
         self._draw_energy_and_time_values()
         self._draw_particles()
