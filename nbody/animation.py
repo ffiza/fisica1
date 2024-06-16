@@ -166,23 +166,6 @@ class Animation:
         self.idx = 0
         self.running = False
 
-    def _draw_indicator_lines(self) -> None:
-        """
-        Draw lines to guide the eye.
-        """
-        pygame.draw.line(
-            surface=self.screen,
-            color=self.config["INDICATORS_COLOR"],
-            start_pos=(0, self.config["SCREEN_HEIGHT"] / 2),
-            end_pos=(self.config["SCREEN_WIDTH"],
-                     self.config["SCREEN_HEIGHT"] / 2))
-        pygame.draw.line(
-            surface=self.screen,
-            color=self.config["INDICATORS_COLOR"],
-            start_pos=(self.config["SCREEN_WIDTH"] / 2, 0),
-            end_pos=(self.config["SCREEN_WIDTH"] / 2,
-                     self.config["SCREEN_HEIGHT"]))
-
     def _update_energy_values(self) -> None:
         """
         Update the values of the energy bars to the current snapshot index.
@@ -255,7 +238,6 @@ class Animation:
         Draw the elements on the screen in the current snapshot.
         """
 
-        self._draw_indicator_lines()
         self.grid.draw(self.screen)
         self._draw_energy_bars()
         self._draw_energy_and_time_values()
