@@ -9,6 +9,7 @@ import utils
 from ui.debugger import Debugger
 from ui.indicator_bar import IndicatorBar
 from ui.grid import Grid
+from ui.text import Text
 
 PARTICLE_COLORS = [
     "#FA4656", "#2C73D6", "#00D75B", "#FEF058", "#FFAA4C", "#A241B2"]
@@ -52,7 +53,7 @@ class Animation:
         self.initial_energy = self.energies[0, 0]
         self.idx = 0  # Current simulation snapshot
 
-        # Read data and transform coordinates
+        # Transform coordinates
         for i in range(self.n_bodies):
             self.xpos[:, i], self.ypos[:, i] = \
                 self._transform_coordinates(
@@ -64,6 +65,7 @@ class Animation:
             flags=pygame.FULLSCREEN, depth=self.config["COLOR_DEPTH"])
         pygame.display.set_caption(self.config["WINDOW_NAME"])
 
+        # Setup clock
         self.clock = pygame.time.Clock()
 
         # Setup fonts
@@ -109,17 +111,27 @@ class Animation:
             color=self.config["INDICATORS_COLOR"], label="K", font=self.font,
             text_sep=self.config["TEXT_OFFSET"] * self.config["SCREEN_HEIGHT"])
 
+        # Set energy and time text boxes
+        self.energy_text = Text(
+            loc=(self.ind_x0, self.config["SCREEN_HEIGHT"] - 2 * self.ind_x0),
+            font=self.font, value=f"{self.energies[0, 0]:.2f}",
+            color=self.config["INDICATORS_COLOR"])
+        self.time_text = Text(
+            loc=(self.ind_x0, self.config["SCREEN_HEIGHT"] - 1 * self.ind_x0),
+            font=self.font, value=f"{self.time[0]:.2f}",
+            color=self.config["INDICATORS_COLOR"])
+
     @staticmethod
     def _quit() -> None:
         """
-        This method quits the animation and closes the window.
+        Quit the animation and close the window.
         """
         pygame.quit()
         sys.exit()
 
-    def _check_events(self) -> None:
+    def _handle_user_events(self) -> None:
         """
-        Handle the events loop.
+        Handle the user inputs.
         """
         for event in pygame.event.get():
             # Quitting
@@ -148,12 +160,9 @@ class Animation:
                 if self.idx >= 1:
                     self.idx -= self.config["FRAME_SKIP"]
 
-    def _transform_coordinates(self,
-                               x: np.ndarray,
-                               y: np.ndarray,
-                               ) -> tuple:
+    def _transform_coordinates(self, x: np.ndarray, y: np.ndarray) -> tuple:
         """
-        This method transforms simulation coordinates to PyGame coordinates.
+        Transform simulation coordinates to PyGame coordinates.
 
         Parameters
         ----------
@@ -164,7 +173,6 @@ class Animation:
 
         Returns
         -------
-
         x_pyg : np.ndarray
             The coordinates in the animation x-axis.
         y_pyg : np.ndarray
@@ -181,10 +189,13 @@ class Animation:
         return x_pyg, y_pyg
 
     def _reset_animation(self) -> None:
+        """
+        Reset the animation to the first snapshot and pause the run.
+        """
         self.idx = 0
         self.running = False
 
-    def _update_energy_values(self) -> None:
+    def _update_energy_bars(self) -> None:
         """
         Update the values of the energy bars to the current snapshot index.
         """
@@ -195,9 +206,18 @@ class Animation:
         self.kinetic_energy_bar.set_value(
             self.energies[self.idx, 1] / self.max_energy_abs)
 
+    def _update_text(self) -> None:
+        """
+        Update the values of the energy and text elements to the current
+        snapshot.
+        """
+        self.energy_text.set_value(
+            f"Energy: {self.energies[self.idx, 0]:.2f} J")
+        self.time_text.set_value(f"Time: {self.time[self.idx]:.1f} s")
+
     def _draw_energy_bars(self) -> None:
         """
-        Draw the energy bars of the system.
+        Draw the energy bars.
         """
         self.mechanical_energy_bar.draw(self.screen)
         self.potential_energy_bar.draw(self.screen)
@@ -224,28 +244,12 @@ class Animation:
                                (self.xpos[self.idx, i],
                                 self.ypos[self.idx, i]), 10)
 
-    def _draw_energy_and_time_values(self) -> None:
+    def _draw_text(self) -> None:
         """
         Draw the energy and time values in the current snapshot.
         """
-        text = self.font.render(
-            f"Energy: {self.energies[self.idx, 0]:.2f} J",
-            True, self.config["INDICATORS_COLOR"])
-        self.screen.blit(
-            text,
-            text.get_rect(
-                bottomleft=(
-                    self.ind_x0,
-                    self.config["SCREEN_HEIGHT"] - 2 * self.ind_x0)))
-        text = self.font.render(
-            f"Time: {self.time[self.idx]:.1f} s",
-            True, self.config["INDICATORS_COLOR"])
-        self.screen.blit(
-            text,
-            text.get_rect(
-                bottomleft=(
-                    self.ind_x0,
-                    self.config["SCREEN_HEIGHT"] - 1 * self.ind_x0)))
+        self.energy_text.draw(self.screen)
+        self.time_text.draw(self.screen)
 
     def _draw_elements(self) -> None:
         """
@@ -254,7 +258,7 @@ class Animation:
 
         self.grid.draw(self.screen)
         self._draw_energy_bars()
-        self._draw_energy_and_time_values()
+        self._draw_text()
         self._draw_particles()
 
     def run(self) -> None:
@@ -263,16 +267,15 @@ class Animation:
         """
 
         while True:  # Main game loop
-            self._check_events()
+            self._handle_user_events()
             if self.idx >= self.n_frames:
                 self._reset_animation()
 
-            self._update_energy_values()
+            self._update_energy_bars()
+            self._update_text()
 
             self.screen.fill(self.config["BACKGROUND_COLOR"])
             self._draw_elements()
-
-            self.clock.tick(self.config["FPS"])
 
             if self.debugging:
                 self.debugger.render(
@@ -305,6 +308,8 @@ class Animation:
                                   0.05 * self.config["SCREEN_HEIGHT"])))
 
             pygame.display.flip()
+
+            self.clock.tick(self.config["FPS"])
 
 
 def main():
