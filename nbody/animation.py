@@ -8,6 +8,7 @@ import numpy as np
 import utils
 from ui.debugger import Debugger
 from ui.indicator_bar import IndicatorBar
+from ui.indicator_bar import HorizontalIndicatorBar
 from ui.grid import Grid
 from ui.text import Text
 
@@ -41,6 +42,8 @@ class Animation:
         self.ypos: np.ndarray = ypos
         self.time: np.ndarray = time
         self.energies: np.ndarray = energies
+
+        self.max_time: float = self.time[-1]
 
         pygame.init()
 
@@ -110,6 +113,14 @@ class Animation:
             width=bar_width, height=bar_height,
             color=self.config["INDICATORS_COLOR"], label="K", font=self.font,
             text_sep=self.config["TEXT_OFFSET"] * self.config["SCREEN_HEIGHT"])
+
+        # Setup time bar
+        self.time_bar = HorizontalIndicatorBar(
+            left=0,
+            top=self.config["SCREEN_HEIGHT"] - self.config["TIME_BAR_HEIGHT"],
+            width=self.config["SCREEN_WIDTH"],
+            height=self.config["TIME_BAR_HEIGHT"],
+            color=self.config["INDICATORS_COLOR"], font=self.font)
 
         # Set energy and time text boxes
         self.energy_text = Text(
@@ -195,9 +206,10 @@ class Animation:
         self.idx = 0
         self.running = False
 
-    def _update_energy_bars(self) -> None:
+    def _update_indicator_bars(self) -> None:
         """
-        Update the values of the energy bars to the current snapshot index.
+        Update the values of the energy and time bars to the current snapshot
+        index.
         """
         self.mechanical_energy_bar.set_value(
             self.energies[self.idx, 0] / self.max_energy_abs)
@@ -205,6 +217,7 @@ class Animation:
             self.energies[self.idx, 2] / self.max_energy_abs)
         self.kinetic_energy_bar.set_value(
             self.energies[self.idx, 1] / self.max_energy_abs)
+        self.time_bar.set_value(self.time[self.idx] / self.max_time)
 
     def _update_text(self) -> None:
         """
@@ -215,13 +228,14 @@ class Animation:
             f"Energy: {self.energies[self.idx, 0]:.2f} J")
         self.time_text.set_value(f"Time: {self.time[self.idx]:.1f} s")
 
-    def _draw_energy_bars(self) -> None:
+    def _draw_bars(self) -> None:
         """
-        Draw the energy bars.
+        Draw the energy and time bars.
         """
         self.mechanical_energy_bar.draw(self.screen)
         self.potential_energy_bar.draw(self.screen)
         self.kinetic_energy_bar.draw(self.screen)
+        self.time_bar.draw(self.screen)
 
     def _draw_particles(self) -> None:
         """
@@ -257,7 +271,7 @@ class Animation:
         """
 
         self.grid.draw(self.screen)
-        self._draw_energy_bars()
+        self._draw_bars()
         self._draw_text()
         self._draw_particles()
 
@@ -271,7 +285,7 @@ class Animation:
             if self.idx >= self.n_frames:
                 self._reset_animation()
 
-            self._update_energy_bars()
+            self._update_indicator_bars()
             self._update_text()
 
             self.screen.fill(self.config["BACKGROUND_COLOR"])

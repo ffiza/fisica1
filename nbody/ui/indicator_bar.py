@@ -60,3 +60,50 @@ class IndicatorBar:
             self.text.get_rect(
                 centerx=self.text_centerx,
                 centery=self.base_level + self.text_sep_dir * self.text_sep))
+
+
+class HorizontalIndicatorBar:
+    """
+    A class to manage an indicator bar that can change its fill value.
+    """
+    def __init__(self, left: float, top: float,
+                 width: float, height: float, color: tuple,
+                 font: pygame.font.Font):
+        self.left: float = left
+        self.top: float = top
+        self.height: float = height
+        self.width: float = width
+        self.color: tuple = color
+        self.rect = pygame.Rect(
+            self.left, self.top, width, self.height)
+
+        self.value: float = None
+        self.set_value(1.0)
+
+    def set_value(self, value: float):
+        """
+        Sets the value of indicator bar and updates geometric quantities.
+
+        Parameters
+        ----------
+        value : float
+            The new value. Must be between -1.0 and 1.0.
+        """
+        if value > 1.0:
+            value = 1.0
+        if value < -1.0:
+            value = -1.0
+
+        self.value = value
+        self.rect.width = abs(self.value * self.width)
+
+    def draw(self, screen: pygame.Surface):
+        """
+        Draws the indicator bar on `screen`.
+
+        Parameters
+        ----------
+        screen : pygame.Surface
+            The screen on which to draw the indicator bar.
+        """
+        pygame.draw.rect(screen, self.color, self.rect)
