@@ -292,6 +292,11 @@ class Animation:
             self._draw_elements()
 
             if self.debugging:
+                # TODO: It would be useful to show the integration time step
+                #  here. However, this is information cannot be obtained from
+                #  the data because the saved dataframe is sampled to the
+                #  desired FPS (the information is stored in the configuration
+                #  file).
                 self.debugger.render(
                     [f"FPS: {self.clock.get_fps()}",
                      f"DEBUGGING: {int(self.debugging)}",
