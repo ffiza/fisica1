@@ -112,7 +112,6 @@ class Animation:
 
         # Setup the labels of the energy bars
         start_anchor = "midtop" if self.energies[0, 0] >= 0.0 else "midbottom"
-        print(start_anchor)
         self.mechanical_energy_text = Text(
             loc=(self.ind_x0 + bar_width / 2, bar_base_level),
             font=self.font, value="E", color=self.config["INDICATORS_COLOR"],
@@ -237,17 +236,18 @@ class Animation:
         Update the values of the energy and text elements to the current
         snapshot.
         """
-        self.energy_text.value = f"Energy: {self.energies[self.idx, 0]:.2f} J"
-        self.time_text.value = f"Time: {self.time[self.idx]:.1f} s"
+        self.energy_text.set_value(
+            f"Energy: {self.energies[self.idx, 0]:.2f} J")
+        self.time_text.set_value(f"Time: {self.time[self.idx]:.1f} s")
 
         # Change mechanical energy label anchor
         if self.idx >= 1:
             if (self.energies[self.idx, 0] > 0.0) \
                     and (self.energies[self.idx - 1, 0] < 0.0):
-                self.mechanical_energy_text.anchor = "midtop"
+                self.mechanical_energy_text.set_anchor("midtop")
             if (self.energies[self.idx, 0] < 0.0) \
                     and (self.energies[self.idx - 1, 0] > 0.0):
-                self.mechanical_energy_text.anchor = "midbottom"
+                self.mechanical_energy_text.set_anchor("midbottom")
 
     def _draw_bars(self) -> None:
         """

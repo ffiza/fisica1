@@ -28,59 +28,52 @@ class Text:
         """
         self.__font: pygame.font.Font = font
         self.__color: str = color
-        self.__surf: pygame.Surface = None
         self.__value: str = None
 
-        self.loc: tuple = loc
-        self.anchor: str = anchor
-        self.value: str = value
+        self.set_loc(loc)
+        self.set_anchor(anchor)
+        self.set_value(value)
 
-    @property
-    def loc(self) -> tuple:
+    def get_loc(self) -> tuple:
         return self.__loc
 
-    @loc.setter
-    def loc(self, loc: tuple) -> None:
+    def set_loc(self, loc: tuple) -> None:
         self.__loc = loc
 
-    @property
-    def anchor(self) -> str:
+    def get_anchor(self) -> str:
         return self.__anchor
 
-    @anchor.setter
-    def anchor(self, anchor: str) -> None:
+    def set_anchor(self, anchor: str) -> None:
         if anchor in Text.ANCHORS:
             self.__anchor = anchor
         else:
             raise ValueError("Invalid anchor point. Possible values are "
                              f"{Text.ANCHORS}.")
 
-    @property
-    def value(self) -> str:
+    def get_value(self) -> str:
         return self.__value
 
-    @value.setter
-    def value(self, value: str) -> None:
+    def set_value(self, value: str) -> None:
         if self.__value != value:
             self.__value = value
             self.__surf = self.__font.render(self.__value, True, self.__color)
 
     def draw(self, screen: pygame.Surface) -> None:
-        if self.anchor == "bottomleft":
+        if self.get_anchor() == "bottomleft":
             screen.blit(self.__surf,
-                        self.__surf.get_rect(bottomleft=self.loc))
-        if self.anchor == "midbottom":
+                        self.__surf.get_rect(bottomleft=self.get_loc()))
+        if self.get_anchor() == "midbottom":
             screen.blit(self.__surf,
-                        self.__surf.get_rect(midbottom=self.loc))
-        if self.anchor == "bottomright":
+                        self.__surf.get_rect(midbottom=self.get_loc()))
+        if self.get_anchor() == "bottomright":
             screen.blit(self.__surf,
-                        self.__surf.get_rect(bottomright=self.loc))
-        if self.anchor == "topleft":
+                        self.__surf.get_rect(bottomright=self.get_loc()))
+        if self.get_anchor() == "topleft":
             screen.blit(self.__surf,
-                        self.__surf.get_rect(topleft=self.loc))
-        if self.anchor == "midtop":
+                        self.__surf.get_rect(topleft=self.get_loc()))
+        if self.get_anchor() == "midtop":
             screen.blit(self.__surf,
-                        self.__surf.get_rect(midtop=self.loc))
-        if self.anchor == "topright":
+                        self.__surf.get_rect(midtop=self.get_loc()))
+        if self.get_anchor() == "topright":
             screen.blit(self.__surf,
-                        self.__surf.get_rect(topright=self.loc))
+                        self.__surf.get_rect(topright=self.get_loc()))
