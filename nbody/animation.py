@@ -223,13 +223,13 @@ class Animation:
         Update the values of the energy and time bars to the current snapshot
         index.
         """
-        self.mechanical_energy_bar.value = \
-            - self.energies[self.idx, 0] / self.max_energy_abs
-        self.potential_energy_bar.value = \
-            - self.energies[self.idx, 2] / self.max_energy_abs
-        self.kinetic_energy_bar.value = \
-            - self.energies[self.idx, 1] / self.max_energy_abs
-        self.time_bar.value = self.time[self.idx] / self.max_time
+        self.mechanical_energy_bar.set_value(
+            - self.energies[self.idx, 0] / self.max_energy_abs)
+        self.potential_energy_bar.set_value(
+            - self.energies[self.idx, 2] / self.max_energy_abs)
+        self.kinetic_energy_bar.set_value(
+            - self.energies[self.idx, 1] / self.max_energy_abs)
+        self.time_bar.set_value(self.time[self.idx] / self.max_time)
 
     def _update_text(self) -> None:
         """

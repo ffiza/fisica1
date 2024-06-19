@@ -13,27 +13,29 @@ class IndicatorBar:
         self.__rect: pygame.Rect = pygame.Rect(
             self.__left, self.__top, self.__width, self.__height)
 
-        self.fill_direction: str = fill_direction
-        self.value: float = 1.0
+        self.set_fill_direction(fill_direction)
+        self.set_value(1.0)
 
-    @property
-    def fill_direction(self) -> str:
+    def get_fill_direction(self) -> str:
         return self.__fill_direction
 
-    @fill_direction.setter
-    def fill_direction(self, new_fill_direction: str) -> None:
+    def set_fill_direction(self, new_fill_direction: str) -> None:
         if new_fill_direction in ["vertical", "horizontal"]:
             self.__fill_direction = new_fill_direction
         else:
             raise ValueError("Invalid `fill_direction`. Must be either "
                              "`vertical` or `horizontal`.")
 
-    @property
-    def value(self) -> float:
+    def get_color(self) -> str:
+        return self.__color
+
+    def set_color(self, new_color: str) -> None:
+        self.__color = new_color
+
+    def get_value(self) -> float:
         return self.__value
 
-    @value.setter
-    def value(self, new_value: float) -> None:
+    def set_value(self, new_value: float) -> None:
 
         if new_value > 1.0:
             new_value = 1.0
@@ -53,8 +55,7 @@ class IndicatorBar:
         if self.__value < 0.0:
             self.__rect.normalize()
 
-    @property
-    def rect(self) -> pygame.Rect:
+    def get_rect(self) -> pygame.Rect:
         return self.__rect
 
     def draw(self, screen: pygame.Surface) -> None:
