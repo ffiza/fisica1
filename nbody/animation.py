@@ -8,7 +8,6 @@ import numpy as np
 import utils
 from ui.debugger import Debugger
 from ui.indicator_bar import IndicatorBar
-from ui.indicator_bar import HorizontalIndicatorBar
 from ui.grid import Grid
 from ui.text import Text
 
@@ -99,28 +98,42 @@ class Animation:
 
         # Setup energy bars
         self.mechanical_energy_bar = IndicatorBar(
-            left=self.ind_x0, base_level=bar_base_level,
+            left=self.ind_x0, top=bar_base_level,
             width=bar_width, height=bar_height,
-            color=self.config["INDICATORS_COLOR"], label="E", font=self.font,
-            text_sep=self.config["TEXT_OFFSET"] * self.config["SCREEN_HEIGHT"])
+            color=self.config["INDICATORS_COLOR"], fill_direction="vertical")
         self.potential_energy_bar = IndicatorBar(
-            left=self.ind_x0 + bar_sep, base_level=bar_base_level,
+            left=self.ind_x0 + bar_sep, top=bar_base_level,
             width=bar_width, height=bar_height,
-            color=self.config["INDICATORS_COLOR"], label="U", font=self.font,
-            text_sep=self.config["TEXT_OFFSET"] * self.config["SCREEN_HEIGHT"])
+            color=self.config["INDICATORS_COLOR"], fill_direction="vertical")
         self.kinetic_energy_bar = IndicatorBar(
-            left=self.ind_x0 + 2 * bar_sep, base_level=bar_base_level,
+            left=self.ind_x0 + 2 * bar_sep, top=bar_base_level,
             width=bar_width, height=bar_height,
-            color=self.config["INDICATORS_COLOR"], label="K", font=self.font,
-            text_sep=self.config["TEXT_OFFSET"] * self.config["SCREEN_HEIGHT"])
+            color=self.config["INDICATORS_COLOR"], fill_direction="vertical")
+
+        # Setup the labels of the energy bars
+        start_anchor = "midtop" if self.energies[0, 0] >= 0.0 else "midbottom"
+        print(start_anchor)
+        self.mechanical_energy_text = Text(
+            loc=(self.ind_x0 + bar_width / 2, bar_base_level),
+            font=self.font, value="E", color=self.config["INDICATORS_COLOR"],
+            anchor=start_anchor)
+        self.potential_energy_text = Text(
+            loc=(self.ind_x0 + bar_width / 2 + bar_sep, bar_base_level),
+            font=self.font, value="U", color=self.config["INDICATORS_COLOR"],
+            anchor="midbottom")
+        self.kinetic_energy_text = Text(
+            loc=(self.ind_x0 + bar_width / 2 + 2 * bar_sep, bar_base_level),
+            font=self.font, value="K", color=self.config["INDICATORS_COLOR"],
+            anchor="midtop")
 
         # Setup time bar
-        self.time_bar = HorizontalIndicatorBar(
+        self.time_bar = IndicatorBar(
             left=0,
             top=self.config["SCREEN_HEIGHT"] - self.config["TIME_BAR_HEIGHT"],
             width=self.config["SCREEN_WIDTH"],
             height=self.config["TIME_BAR_HEIGHT"],
-            color=self.config["INDICATORS_COLOR"], font=self.font)
+            color=self.config["INDICATORS_COLOR"],
+            fill_direction="horizontal")
 
         # Set energy and time text boxes
         self.energy_text = Text(
@@ -211,22 +224,30 @@ class Animation:
         Update the values of the energy and time bars to the current snapshot
         index.
         """
-        self.mechanical_energy_bar.set_value(
-            self.energies[self.idx, 0] / self.max_energy_abs)
-        self.potential_energy_bar.set_value(
-            self.energies[self.idx, 2] / self.max_energy_abs)
-        self.kinetic_energy_bar.set_value(
-            self.energies[self.idx, 1] / self.max_energy_abs)
-        self.time_bar.set_value(self.time[self.idx] / self.max_time)
+        self.mechanical_energy_bar.value = \
+            - self.energies[self.idx, 0] / self.max_energy_abs
+        self.potential_energy_bar.value = \
+            - self.energies[self.idx, 2] / self.max_energy_abs
+        self.kinetic_energy_bar.value = \
+            - self.energies[self.idx, 1] / self.max_energy_abs
+        self.time_bar.value = self.time[self.idx] / self.max_time
 
     def _update_text(self) -> None:
         """
         Update the values of the energy and text elements to the current
         snapshot.
         """
-        self.energy_text.set_value(
-            f"Energy: {self.energies[self.idx, 0]:.2f} J")
-        self.time_text.set_value(f"Time: {self.time[self.idx]:.1f} s")
+        self.energy_text.value = f"Energy: {self.energies[self.idx, 0]:.2f} J"
+        self.time_text.value = f"Time: {self.time[self.idx]:.1f} s"
+
+        # Change mechanical energy label anchor
+        if self.idx >= 1:
+            if (self.energies[self.idx, 0] > 0.0) \
+                    and (self.energies[self.idx - 1, 0] < 0.0):
+                self.mechanical_energy_text.anchor = "midtop"
+            if (self.energies[self.idx, 0] < 0.0) \
+                    and (self.energies[self.idx - 1, 0] > 0.0):
+                self.mechanical_energy_text.anchor = "midbottom"
 
     def _draw_bars(self) -> None:
         """
@@ -264,6 +285,9 @@ class Animation:
         """
         self.energy_text.draw(self.screen)
         self.time_text.draw(self.screen)
+        self.mechanical_energy_text.draw(self.screen)
+        self.potential_energy_text.draw(self.screen)
+        self.kinetic_energy_text.draw(self.screen)
 
     def _draw_elements(self) -> None:
         """

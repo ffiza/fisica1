@@ -2,108 +2,60 @@ import pygame
 
 
 class IndicatorBar:
-    """
-    A class to manage an indicator bar that can change its fill value.
-    """
-    def __init__(self, left: float, base_level: float,
-                 width: float, height: float, color: tuple, label: str,
-                 font: pygame.font.Font, text_sep: float):
-        self.left: float = left
-        self.base_level: float = base_level
-        self.height: float = height
-        self.color: tuple = color
-        self.text_sep: float = text_sep
-        self.text_sep_dir: int = 1
-        self.text: pygame.Surface = font.render(label, True, color)
-        self.text_centerx: float = self.left + width / 2
-        self.rect = pygame.Rect(
-            self.left, self.base_level, width, self.height)
+    def __init__(self, left: int, top: int, width: int, height: int,
+                 color: str, fill_direction: str) -> None:
+        self.__left: int = left
+        self.__top: int = top
+        self.__width: int = width
+        self.__height: int = height
+        self.__color: str = color
 
-        self.value: float = None
-        self.set_value(1.0)
+        self.__rect: pygame.Rect = pygame.Rect(
+            self.__left, self.__top, self.__width, self.__height)
 
-    def set_value(self, value: float):
-        """
-        Sets the value of indicator bar and updates geometric quantities.
+        self.fill_direction: str = fill_direction
+        self.value: float = 1.0
 
-        Parameters
-        ----------
-        value : float
-            The new value. Must be between -1.0 and 1.0.
-        """
-        if value > 1.0:
-            value = 1.0
-        if value < -1.0:
-            value = -1.0
+    @property
+    def fill_direction(self) -> str:
+        return self.__fill_direction
 
-        self.value = value
-        self.rect.height = abs(self.value * self.height)
-        if self.value < 0.0:
-            self.rect.top = self.base_level
-            self.text_sep_dir = -1
+    @fill_direction.setter
+    def fill_direction(self, new_fill_direction: str) -> None:
+        if new_fill_direction in ["vertical", "horizontal"]:
+            self.__fill_direction = new_fill_direction
         else:
-            self.rect.top = self.base_level - self.rect.height
-            self.text_sep_dir = 1
+            raise ValueError("Invalid `fill_direction`. Must be either "
+                             "`vertical` or `horizontal`.")
 
-    def draw(self, screen: pygame.Surface):
-        """
-        Draws the indicator bar and its label on `screen`.
+    @property
+    def value(self) -> float:
+        return self.__value
 
-        Parameters
-        ----------
-        screen : pygame.Surface
-            The screen on which to draw the indicator bar.
-        """
-        pygame.draw.rect(screen, self.color, self.rect)
-        screen.blit(
-            self.text,
-            self.text.get_rect(
-                centerx=self.text_centerx,
-                centery=self.base_level + self.text_sep_dir * self.text_sep))
+    @value.setter
+    def value(self, new_value: float) -> None:
 
+        if new_value > 1.0:
+            new_value = 1.0
+        if new_value < -1.0:
+            new_value = -1.0
+        self.__value = new_value
 
-class HorizontalIndicatorBar:
-    """
-    A class to manage an indicator bar that can change its fill value.
-    """
-    def __init__(self, left: float, top: float,
-                 width: float, height: float, color: tuple,
-                 font: pygame.font.Font):
-        self.left: float = left
-        self.top: float = top
-        self.height: float = height
-        self.width: float = width
-        self.color: tuple = color
-        self.rect = pygame.Rect(
-            self.left, self.top, width, self.height)
+        if self.__fill_direction == "horizontal":
+            self.__rect.width = self.__value * self.__width
+            if self.__rect.left != self.__left:
+                self.__rect.left = self.__left
+        if self.__fill_direction == "vertical":
+            self.__rect.height = self.__value * self.__height
+            if self.__rect.top != self.__top:
+                self.__rect.top = self.__top
 
-        self.value: float = None
-        self.set_value(1.0)
+        if self.__value < 0.0:
+            self.__rect.normalize()
 
-    def set_value(self, value: float):
-        """
-        Sets the value of indicator bar and updates geometric quantities.
+    @property
+    def rect(self) -> pygame.Rect:
+        return self.__rect
 
-        Parameters
-        ----------
-        value : float
-            The new value. Must be between -1.0 and 1.0.
-        """
-        if value > 1.0:
-            value = 1.0
-        if value < -1.0:
-            value = -1.0
-
-        self.value = value
-        self.rect.width = abs(self.value * self.width)
-
-    def draw(self, screen: pygame.Surface):
-        """
-        Draws the indicator bar on `screen`.
-
-        Parameters
-        ----------
-        screen : pygame.Surface
-            The screen on which to draw the indicator bar.
-        """
-        pygame.draw.rect(screen, self.color, self.rect)
+    def draw(self, screen: pygame.Surface) -> None:
+        pygame.draw.rect(screen, self.__color, self.__rect)
