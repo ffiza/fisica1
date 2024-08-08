@@ -1,6 +1,19 @@
-# Animaciones de problemas de $N$-cuerpos
+<div align="center">
+    <h1>Animaciones de gravitación</h1>
+</div>
+
+<p align="center">
+    <a href="https://www.python.org/"><img src="https://forthebadge.com/images/badges/made-with-python.svg"></a>
+</p>
 
 Ejemplos de simulaciones de sistemas de $N$-cuerpos mediante gravedad newtoniana.
+
+<p align="center">
+    <a href="https://i.imgur.com/rdGvizO.png"><img src="https://i.imgur.com/rdGvizO.png" width=300></a>
+    <a href="https://i.imgur.com/IDAVO4n.png"><img src="https://i.imgur.com/IDAVO4n.png" width=300></a>
+    <a href="https://i.imgur.com/LnKM7cf.png"><img src="https://i.imgur.com/LnKM7cf.png" width=300></a>
+    <a href="https://i.imgur.com/eYiF0Dx.png"><img src="https://i.imgur.com/eYiF0Dx.png" width=300></a>
+</p>
 
 Los archivos de configuración relacionados con la física (paso temporal para la integración, longitud de suavizado, constante gravitatoria) para cada simulación pueden encontrarse en `configs/` en formato `yml`, las condiciones iniciales están en `ics/`, los resultados de cada corrida son almacenados en `results/` y las configuraciones globales (comunes a todas las corridas) se encuentran en `configs/global.yml`.
 
